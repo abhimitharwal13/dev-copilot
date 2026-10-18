@@ -49,6 +49,33 @@ describe('detectHeuristic', () => {
     expect(detectHeuristic(text)).toMatchObject({ type: 'dsa', certain: true })
   })
 
+  it.each(['design book my show', 'Design BookMyShow', 'Design a movie ticket booking system like BookMyShow'])(
+    'treats %j as system design with LLD as the alternative, and asks the model',
+    (text) => {
+      expect(detectHeuristic(text)).toMatchObject({ type: 'hld', alternative: 'lld', certain: false })
+    }
+  )
+
+  it('lets a scale cue settle a dual product as system design', () => {
+    const r = detectHeuristic('Design BookMyShow for 10 million users')
+    expect(r).toMatchObject({ type: 'hld', certain: true })
+    expect(r.alternative).toBeUndefined()
+  })
+
+  it('lets a classes cue settle a dual product as LLD', () => {
+    const r = detectHeuristic('Design BookMyShow: model the classes and interfaces, using design patterns')
+    expect(r).toMatchObject({ type: 'lld', certain: true })
+    expect(r.alternative).toBeUndefined()
+  })
+
+  it.each(['design swiggy', 'Design a food delivery app'])('classifies the product prompt %j as system design', (text) => {
+    expect(detectHeuristic(text)).toMatchObject({ type: 'hld', certain: true })
+  })
+
+  it('leans to system design for a bare "design X" with no other cue', () => {
+    expect(detectHeuristic('design a coupon platform')).toMatchObject({ type: 'hld', certain: false })
+  })
+
   it('defaults to DSA with zero confidence when there is no signal', () => {
     const r = detectHeuristic('hello there')
     expect(r).toMatchObject({ type: 'dsa', confidence: 0, certain: false })
@@ -78,6 +105,11 @@ describe('detectProblemType', () => {
     const provider = fakeProvider('lld')
     const r = await detectProblemType('Design a rate limiter', { provider, llmFallback: true })
     expect(r).toMatchObject({ type: 'lld', method: 'llm' })
+  })
+
+  it('keeps the LLD alternative when the model picks system design for BookMyShow', async () => {
+    const r = await detectProblemType('Design BookMyShow', { provider: fakeProvider('hld'), llmFallback: true })
+    expect(r).toMatchObject({ type: 'hld', method: 'llm', alternative: 'lld' })
   })
 
   it('falls back to the heuristic when the model call fails', async () => {

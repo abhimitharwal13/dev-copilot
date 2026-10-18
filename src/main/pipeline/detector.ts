@@ -36,7 +36,7 @@ const SIGNALS: Record<ProblemType, Signal[]> = {
     { pattern: /\blow[- ]level design\b|\blld\b|\bmachine coding\b|\bobject[- ]oriented design\b|\booad\b/, weight: 4 },
     { pattern: /\bclass diagram\b|\buml\b|\bdesign patterns?\b|\bsolid principles?\b/, weight: 3 },
     { pattern: /\b(design|implement|model) (a|an|the) .*\b(class|classes|classes and interfaces|object model)\b/, weight: 3 },
-    { pattern: /\bparking lot\b|\belevator\b|\bvending machine\b|\bsplitwise\b|\btic[- ]tac[- ]toe\b|\bchess\b|\bsnake and ladder\b|\blibrary management\b|\bmovie ticket\b|\bbookmyshow\b|\batm\b|\blogger\b|\bcoffee machine\b/, weight: 3 },
+    { pattern: /\bparking lot\b|\belevator\b|\bvending machine\b|\btic[- ]tac[- ]toe\b|\bchess\b|\bsnake and ladder\b|\blibrary management\b|\batm\b|\blogger\b|\bcoffee machine\b/, weight: 3 },
     { pattern: /\bsingleton\b|\bfactory\b|\bstrategy pattern\b|\bobserver\b|\bdecorator\b|\bbuilder pattern\b|\bstate pattern\b|\badapter\b/, weight: 2 },
     { pattern: /\bclasses\b|\binterfaces?\b|\binheritance\b|\bpolymorphism\b|\bencapsulation\b|\babstract class\b|\bcomposition\b/, weight: 1 },
     { pattern: /\bentities\b|\bextensible\b|\bthread[- ]safe\b|\bconcurrency\b/, weight: 1 },
@@ -45,6 +45,7 @@ const SIGNALS: Record<ProblemType, Signal[]> = {
   hld: [
     { pattern: /\bsystem design\b|\bhigh[- ]level design\b|\bhld\b|\barchitect(ure)? (for|of)\b/, weight: 4 },
     { pattern: /\b(design|build|architect) (a |an )?(twitter|instagram|whatsapp|youtube|netflix|uber|tinyurl|url shortener|google drive|dropbox|news feed|chat (system|app)|notification (system|service)|search engine|web crawler|ticketmaster|typeahead|autocomplete)\b/, weight: 4 },
+    { pattern: /\b(design|build|architect) (a |an )?(swiggy|zomato|ola|lyft|paytm|airbnb|spotify|amazon|flipkart|linkedin|facebook|tiktok|zoom|slack|google docs|google maps|yelp|stripe|payment (system|gateway)|food delivery( app)?|ride[- ]sharing( app)?|e-?commerce (site|platform))\b/, weight: 4 },
     { pattern: /\bmillions? (of )?(users|requests|dau|mau)\b|\bbillions?\b|\bdau\b|\bmau\b|\bqps\b|\brps\b|\bat scale\b|\bscalab(le|ility)\b/, weight: 3 },
     { pattern: /\bload balancer\b|\bcdn\b|\bsharding\b|\bpartition(ing)?\b|\breplication\b|\bconsistent hashing\b|\bmessage queue\b|\bkafka\b|\bpub[/-]?sub\b/, weight: 2 },
     { pattern: /\bmicroservices?\b|\bdistributed\b|\bhigh(ly)? availab(le|ility)\b|\bfault[- ]toleran(t|ce)\b|\bcap theorem\b|\beventual(ly)? consisten(t|cy)\b/, weight: 2 },
@@ -53,6 +54,18 @@ const SIGNALS: Record<ProblemType, Signal[]> = {
     { pattern: /\brate limiter\b|\bkey[- ]value store\b|\bdistributed cache\b/, weight: 2 }
   ]
 }
+
+/**
+ * Products interviewers ask both as low-level design (classes) and as system
+ * design (scale). They score for both types, so only another cue such as
+ * "classes" or "million users" decides, and the answer offers the other type.
+ */
+const DUAL_SIGNALS: RegExp[] = [
+  /\bbook ?my ?show\b|\bmovie (ticket )?booking\b|\bmovie tickets?\b/,
+  /\b(ticket|seat|hotel|flight|cab|table|appointment) (booking|reservation)( system)?\b/,
+  /\bsplitwise\b/
+]
+const DUAL_WEIGHT = 3
 
 export const TYPES: ProblemType[] = ['dsa', 'lld', 'hld']
 
@@ -69,23 +82,43 @@ export function scoreText(text: string): Record<ProblemType, number> {
       if (pattern.test(lower)) scores[type] += weight
     }
   }
+  if (isDualProduct(lower)) {
+    scores.lld += DUAL_WEIGHT
+    scores.hld += DUAL_WEIGHT
+  }
   return scores
+}
+
+function isDualProduct(lower: string): boolean {
+  return DUAL_SIGNALS.some((p) => p.test(lower))
+}
+
+/** The other design type when the text names a product asked both ways and nothing settles it. */
+function designAlternative(text: string, scores: Record<ProblemType, number>, type: ProblemType): ProblemType | undefined {
+  if (type === 'dsa' || !isDualProduct(text.toLowerCase())) return undefined
+  if (Math.abs(scores.lld - scores.hld) >= DUAL_WEIGHT) return undefined
+  return type === 'lld' ? 'hld' : 'lld'
 }
 
 export function detectHeuristic(text: string): DetectionResult & { certain: boolean } {
   const scores = scoreText(text)
   const total = scores.dsa + scores.lld + scores.hld
-  const ranked = [...TYPES].sort((a, b) => scores[b] - scores[a])
+  // On an LLD/HLD tie, prefer system design: "design <product>" usually means a system design round.
+  const ranked = [...TYPES].sort((a, b) => scores[b] - scores[a] || (b === 'hld' ? 1 : a === 'hld' ? -1 : 0))
   const top = ranked[0]
-  // With no signal at all, DSA is the most common case for pasted problems.
-  const type = total === 0 ? 'dsa' : top
+  // With no signal at all, a bare "design X" is usually a system design round;
+  // anything else is most often a pasted coding problem.
+  const fallback = /^\s*(design|architect)\b/.test(text.toLowerCase()) ? 'hld' : 'dsa'
+  const type = total === 0 ? fallback : top
   const confidence = total === 0 ? 0 : scores[top] / total
+  const alternative = designAlternative(text, scores, type)
   return {
     type,
     confidence,
     method: 'heuristic',
     scores,
-    certain: scores[top] >= MIN_SCORE && confidence >= MIN_CONFIDENCE
+    ...(alternative && { alternative }),
+    certain: !alternative && scores[top] >= MIN_SCORE && confidence >= MIN_CONFIDENCE
   }
 }
 
@@ -93,7 +126,8 @@ const CLASSIFIER_SYSTEM = `You classify software engineering interview and desig
 Reply with exactly one word:
 - dsa: a data structures and algorithms / coding problem with a precise input and output
 - lld: low-level / object-oriented design of classes, interfaces and patterns for one component
-- hld: system design of a distributed service: scale, storage, APIs, architecture`
+- hld: system design of a distributed service: scale, storage, APIs, architecture
+A request to design a named product or service (for example "design BookMyShow") with no mention of classes is hld.`
 
 export function parseClassification(reply: string): ProblemType | undefined {
   const match = reply.toLowerCase().match(/\b(dsa|lld|hld)\b/)
@@ -134,7 +168,10 @@ export async function detectProblemType(text: string, options: DetectOptions): P
       signal: options.signal
     })
     const type = parseClassification(reply)
-    if (type) return { type, confidence: 0.9, method: 'llm', scores: result.scores }
+    if (type) {
+      const alternative = designAlternative(text, result.scores, type)
+      return { type, confidence: 0.9, method: 'llm', scores: result.scores, ...(alternative && { alternative }) }
+    }
   } catch {
     // Classification is best-effort; fall back to the heuristic answer.
   }

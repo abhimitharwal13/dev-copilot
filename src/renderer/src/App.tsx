@@ -150,8 +150,9 @@ export function App() {
     'Alt+Down': () => scroll('down')
   }
   TYPE_ORDER.forEach((t, i) => (keyMap[`CommandOrControl+${i + 1}`] = () => switchType(t)))
+  const answerType = state.detection?.type ?? typeOverride ?? 'dsa'
   if (isFollowUp && !state.busy) {
-    FOLLOW_UPS.forEach((label, i) => (keyMap[`Alt+${i + 1}`] = () => submit(label)))
+    FOLLOW_UPS[answerType].forEach(({ prompt }, i) => (keyMap[`Alt+${i + 1}`] = () => submit(prompt)))
   }
   // Dialogs own the keyboard while open (including recording new shortcuts).
   useKeyMap(dialog ? {} : keyMap)
@@ -218,6 +219,16 @@ export function App() {
               Add an API key for {active?.label}: press <kbd>{MOD} + ,</kbd> to open settings.
             </div>
           )}
+          {state.detection?.alternative && state.detection.method !== 'manual' && (
+            <div className="banner banner--info">
+              This is often asked as {SHORT_LABEL[state.detection.alternative]} too. Answering as{' '}
+              {SHORT_LABEL[state.detection.type]}; press{' '}
+              <kbd>
+                {MOD} + {TYPE_ORDER.indexOf(state.detection.alternative) + 1}
+              </kbd>{' '}
+              for {SHORT_LABEL[state.detection.alternative]} instead.
+            </div>
+          )}
           {state.turns.length === 0 ? (
             <div className="empty">
               <h1>Paste a problem. Get a structured breakdown.</h1>
@@ -249,6 +260,7 @@ export function App() {
       <footer className="footer">
         <Composer
           isFollowUp={isFollowUp}
+          problemType={answerType}
           busy={state.busy}
           onSubmit={submit}
           onCancel={cancel}

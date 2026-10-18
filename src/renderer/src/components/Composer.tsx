@@ -1,23 +1,49 @@
 import { useState, type ClipboardEvent, type DragEvent, type KeyboardEvent, type Ref } from 'react'
+import type { ProblemType } from '../../../shared/types'
 import { api } from '../api'
 import { IS_MAC } from '../keyboard'
 
 interface Props {
   isFollowUp: boolean
+  problemType: ProblemType
   busy: boolean
   onSubmit(prompt: string): void
   onCancel(): void
   textareaRef: Ref<HTMLTextAreaElement>
 }
 
-/** One-key refinements; each is bound to Alt + its number. */
-export const FOLLOW_UPS = [
-  'Optimise for space',
-  'More edge cases',
-  'Explain the trade-offs',
-  'Write tests',
-  'Another language'
-]
+export interface FollowUp {
+  label: string
+  /** Sent as the follow-up message. */
+  prompt: string
+}
+
+const followUp = (label: string, prompt = label): FollowUp => ({ label, prompt })
+
+/** One-key refinements per problem type; each is bound to Alt + its number. */
+export const FOLLOW_UPS: Record<ProblemType, FollowUp[]> = {
+  dsa: [
+    followUp('Optimise for space'),
+    followUp('More edge cases'),
+    followUp('Explain the trade-offs'),
+    followUp('Write tests'),
+    followUp('Another language')
+  ],
+  lld: [
+    followUp('Make it thread-safe', 'Make the design thread-safe: show where locking or atomic operations are needed and why.'),
+    followUp('Add a feature', 'Extend the design with the most likely new requirement an interviewer would add, and show which classes change.'),
+    followUp('Explain patterns', 'Explain each design pattern used, the alternative considered, and why this one fits.'),
+    followUp('Sequence diagram', 'Draw a Mermaid sequenceDiagram of the main use case through the classes.'),
+    followUp('Write tests', 'Write unit tests for the core classes.')
+  ],
+  hld: [
+    followUp('Scale it 10x', 'The load grows 10x. Redo the estimates and show what breaks first and how the design changes.'),
+    followUp('Deep dive', 'Go deeper on the hardest component of this system (concurrency, consistency or hot spots), with the exact mechanism.'),
+    followUp('Schema & sharding', 'Give the full database schema with indexes, and the sharding or partitioning strategy with its trade-offs.'),
+    followUp('Sequence diagram', 'Draw a Mermaid sequenceDiagram of the main write flow end to end, including failure and retry paths.'),
+    followUp('Interviewer follow-ups', 'List the follow-up questions an interviewer is most likely to ask about this design, each with a strong short answer.')
+  ]
+}
 
 function readAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -39,7 +65,7 @@ async function addFiles(files: FileList): Promise<void> {
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 const ALT = IS_MAC ? '⌥' : 'Alt'
 
-export function Composer({ isFollowUp, busy, onSubmit, onCancel, textareaRef }: Props) {
+export function Composer({ isFollowUp, problemType, busy, onSubmit, onCancel, textareaRef }: Props) {
   const [prompt, setPrompt] = useState('')
   const [dragging, setDragging] = useState(false)
 
@@ -82,8 +108,8 @@ export function Composer({ isFollowUp, busy, onSubmit, onCancel, textareaRef }: 
     >
       {isFollowUp && (
         <div className="composer__chips">
-          {FOLLOW_UPS.map((label, i) => (
-            <button key={label} type="button" className="chip" disabled={busy} onClick={() => submit(label)}>
+          {FOLLOW_UPS[problemType].map(({ label, prompt }, i) => (
+            <button key={label} type="button" className="chip" disabled={busy} onClick={() => submit(prompt)}>
               <kbd>
                 {ALT} {i + 1}
               </kbd>{' '}

@@ -59,7 +59,7 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | --- | --- |
 | `Enter` / `Shift + Enter` | Send / new line |
 | `Esc` | Stop the answer, close a dialog, or hide the overlay |
-| `Alt + 1…5` | Quick follow-ups (optimise space, edge cases, trade-offs, tests, another language) |
+| `Alt + 1…5` | Quick follow-ups for the current type (DSA: optimise space, edge cases, tests…; LLD: thread safety, new feature, patterns…; System Design: scale 10x, deep dive, schema & sharding, sequence diagram, interviewer follow-ups) |
 | `Ctrl/⌘ + 1…3` | Switch DSA / LLD / System Design (re-runs the answer) |
 | `Ctrl/⌘ + N` | New problem |
 | `Ctrl/⌘ + Shift + C` | Copy the last code block |

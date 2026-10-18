@@ -130,6 +130,8 @@ export interface DetectionResult {
   confidence: number
   method: 'heuristic' | 'llm' | 'manual'
   scores: Record<ProblemType, number>
+  /** Set when the problem is commonly asked as this other type too (for example BookMyShow as LLD or HLD). */
+  alternative?: ProblemType
 }
 
 export interface SolveRequest {
