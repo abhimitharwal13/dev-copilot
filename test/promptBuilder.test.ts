@@ -20,6 +20,13 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('Write code in Java')
   })
 
+  it('asks DSA answers for complexity and hint comments in code, plus test cases', () => {
+    const prompt = buildSystemPrompt('dsa', { preferredLanguage: 'Java' })
+    expect(prompt).toContain('`Time: O(...)` and `Space: O(...)`')
+    expect(prompt).toContain('`Hint:`')
+    expect(prompt).toContain('## Test Cases')
+  })
+
   it('asks for Mermaid diagrams in design templates only', () => {
     expect(buildSystemPrompt('lld', { preferredLanguage: 'Python' })).toContain('classDiagram')
     expect(buildSystemPrompt('hld', { preferredLanguage: 'Python' })).toContain('flowchart')

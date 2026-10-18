@@ -25,7 +25,7 @@ export const LLD_TEMPLATE: OutputTemplate = {
     {
       heading: 'Implementation',
       instructions:
-        'A working implementation in one or more fenced code blocks, including a small driver or `main` that exercises the main flow. Keep it compilable.'
+        'A working implementation in one or more fenced code blocks, including a small driver or `main` that exercises the main flow and its edge cases. Keep it compilable. Comment each class with its responsibility and the pattern it plays a role in (for example `// Strategy: pricing varies by vehicle type`), and mark concurrency or extensibility decisions with `Hint:` comments.'
     },
     {
       heading: 'Key Flows',

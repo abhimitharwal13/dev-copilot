@@ -21,12 +21,12 @@ export const DSA_TEMPLATE: OutputTemplate = {
     {
       heading: 'Code',
       instructions:
-        'Clean, idiomatic, runnable code in one fenced block with the language tag. Use descriptive names and brief comments only where the logic is not obvious. Match the function signature from the problem when one is given.'
+        'Clean, idiomatic, runnable code in one fenced block with the language tag. Match the function signature from the problem when one is given. Comment the code for someone explaining it aloud in an interview: start the function with a comment block giving the approach in one line, `Time: O(...)` and `Space: O(...)`; mark each key step with a short comment that says why it works (the invariant, the trick, or the pitfall it avoids), prefixed `Hint:` where it is the core insight. Use the comment syntax of the code language. Do not comment obvious lines.'
     },
     {
-      heading: 'Edge Cases',
+      heading: 'Test Cases',
       instructions:
-        'A bullet list of edge cases (empty input, single element, duplicates, negatives, overflow, cycles, and so on) and how the code handles each.'
+        'A table of test cases with columns Input, Expected and Why: the given samples first, then the edge cases that break naive solutions (empty or single element, duplicates, negatives, overflow, cycles, limits, worst-case size), saying in Why how the code handles each. Then a short dry run of the code on the trickiest case.'
     },
     {
       heading: 'Follow-ups',
