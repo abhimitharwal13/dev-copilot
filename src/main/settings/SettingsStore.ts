@@ -16,8 +16,12 @@ export interface SecretCodec {
   decrypt(encoded: string): string
 }
 
+/** Bumped when a default changes in a way existing files should pick up; see `migrate`. */
+const SCHEMA_VERSION = 2
+
 /** On-disk shape: identical to `Settings` except keys are encrypted. */
 interface StoredSettings extends Omit<Settings, 'providers'> {
+  schemaVersion?: number
   providers: Record<ProviderId, Omit<ProviderConfig, 'apiKey'> & { encryptedApiKey?: string }>
 }
 
@@ -54,8 +58,10 @@ export class SettingsStore {
       ...this.settings,
       ...stripUndefined(patch),
       providers: { ...this.settings.providers },
-      shortcuts: { ...this.settings.shortcuts, ...stripUndefined(patch.shortcuts ?? {}) }
+      shortcuts: { ...this.settings.shortcuts, ...stripUndefined(patch.shortcuts ?? {}) },
+      overlay: { ...this.settings.overlay, ...stripUndefined(patch.overlay ?? {}) }
     }
+    next.overlay.backgroundOpacity = clamp(next.overlay.backgroundOpacity, 0.2, 1)
     for (const [id, change] of Object.entries(patch.providers ?? {}) as [ProviderId, Partial<ProviderConfig>][]) {
       if (!PROVIDER_IDS.includes(id) || !change) continue
       const merged = { ...next.providers[id], ...stripUndefined(change) }
@@ -94,12 +100,17 @@ export class SettingsStore {
         }
       }
     }
-    return {
-      ...defaults,
-      ...stored,
-      providers,
-      shortcuts: { ...defaults.shortcuts, ...stored.shortcuts }
-    }
+    const { schemaVersion = 1, ...rest } = stored
+    return migrate(
+      {
+        ...defaults,
+        ...rest,
+        providers,
+        shortcuts: { ...defaults.shortcuts, ...stored.shortcuts },
+        overlay: { ...defaults.overlay, ...stored.overlay }
+      },
+      schemaVersion
+    )
   }
 
   private save(): void {
@@ -109,12 +120,23 @@ export class SettingsStore {
         return [id, apiKey ? { ...rest, encryptedApiKey: this.codec.encrypt(apiKey) } : rest]
       })
     )
-    const stored = { ...this.settings, providers } as StoredSettings
+    const stored = { schemaVersion: SCHEMA_VERSION, ...this.settings, providers } as StoredSettings
     mkdirSync(dirname(this.filePath), { recursive: true })
     const tmp = `${this.filePath}.tmp`
     writeFileSync(tmp, JSON.stringify(stored, null, 2), { mode: 0o600 })
     renameSync(tmp, this.filePath)
   }
+}
+
+/** Upgrades settings written by older versions. */
+function migrate(settings: Settings, fromVersion: number): Settings {
+  // v1 wrote the old Python default into every file; Java is the default from v2.
+  if (fromVersion < 2 && settings.preferredLanguage === 'Python') return { ...settings, preferredLanguage: 'Java' }
+  return settings
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : max
 }
 
 function stripUndefined<T extends object>(value: T): Partial<T> {

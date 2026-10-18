@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -60,5 +60,33 @@ describe('ContextBuffer', () => {
     const buffer = new ContextBuffer()
     expect(() => buffer.addText('   ')).toThrow()
     expect(() => buffer.addImageDataUrl('data:image/tiff;base64,AAAA')).toThrow(/Unsupported/)
+  })
+})
+
+describe('SettingsStore defaults and migration', () => {
+  const file = () => join(mkdtempSync(join(tmpdir(), 'dcp-')), 'settings.json')
+
+  it('defaults to Java and a translucent always-on-top overlay', () => {
+    const s = new SettingsStore(file(), codec).get()
+    expect(s.preferredLanguage).toBe('Java')
+    expect(s.overlay).toEqual({ backgroundOpacity: 0.72, alwaysOnTop: true })
+    expect(s.shortcuts.customPrompt).toBe('CommandOrControl+Shift+K')
+  })
+
+  it('moves files saved with the old Python default to Java, but keeps a later explicit choice', () => {
+    const path = file()
+    writeFileSync(path, JSON.stringify({ preferredLanguage: 'Python', shortcuts: { toggleWindow: 'F9' } }))
+    const migrated = new SettingsStore(path, codec)
+    expect(migrated.get().preferredLanguage).toBe('Java')
+    expect(migrated.get().shortcuts).toMatchObject({ toggleWindow: 'F9', customPrompt: 'CommandOrControl+Shift+K' })
+
+    migrated.update({ preferredLanguage: 'Python' })
+    expect(new SettingsStore(path, codec).get().preferredLanguage).toBe('Python')
+  })
+
+  it('clamps background opacity', () => {
+    const store = new SettingsStore(file(), codec)
+    expect(store.update({ overlay: { backgroundOpacity: 0 } }).overlay.backgroundOpacity).toBe(0.2)
+    expect(store.update({ overlay: { backgroundOpacity: 3 } }).overlay).toEqual({ backgroundOpacity: 1, alwaysOnTop: true })
   })
 })

@@ -6,7 +6,8 @@ import type {
   PublicSettings,
   SettingsPatch,
   SolveEvent,
-  SolveRequest
+  SolveRequest,
+  UiCommand
 } from './types'
 
 /** Every IPC channel name lives here so main and preload cannot drift apart. */
@@ -24,7 +25,10 @@ export const IPC = {
   solveStart: 'solve:start',
   solveCancel: 'solve:cancel',
   solveEvent: 'solve:event',
-  conversationReset: 'conversation:reset'
+  conversationReset: 'conversation:reset',
+  uiCommand: 'ui:command',
+  windowHide: 'window:hide',
+  shortcutsFailed: 'shortcuts:failed'
 } as const
 
 /** The API the preload script exposes on `window.devCopilot`. */
@@ -51,5 +55,12 @@ export interface DevCopilotApi {
     cancel(requestId: string): Promise<void>
     onEvent(listener: (event: SolveEvent) => void): () => void
     resetConversation(conversationId: string): Promise<void>
+  }
+  ui: {
+    /** Commands triggered by global shortcuts while another app may have focus. */
+    onCommand(listener: (command: UiCommand) => void): () => void
+    hideWindow(): Promise<void>
+    /** Global shortcuts that could not be registered, usually because another app owns them. */
+    failedShortcuts(): Promise<string[]>
   }
 }

@@ -10,14 +10,20 @@ export function defaultSettings(): Settings {
     providers,
     problemTypeMode: 'auto',
     llmDetectionFallback: true,
-    preferredLanguage: 'Python',
+    preferredLanguage: 'Java',
     temperature: 0.2,
     maxTokens: 16000,
+    overlay: { backgroundOpacity: 0.72, alwaysOnTop: true },
     shortcuts: {
+      customPrompt: 'CommandOrControl+Shift+K',
+      solveContext: 'CommandOrControl+Shift+Enter',
       captureClipboard: 'CommandOrControl+Shift+V',
       captureScreen: 'CommandOrControl+Shift+S',
       toggleRecording: 'CommandOrControl+Shift+R',
-      toggleWindow: 'CommandOrControl+Shift+Space'
+      toggleWindow: 'CommandOrControl+Shift+Space',
+      scrollUp: 'CommandOrControl+Shift+Up',
+      scrollDown: 'CommandOrControl+Shift+Down',
+      moveWindowModifier: 'CommandOrControl+Alt'
     }
   }
 }

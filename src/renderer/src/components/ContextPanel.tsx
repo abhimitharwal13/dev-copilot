@@ -1,5 +1,6 @@
 import type { ContextItem } from '../../../shared/types'
 import { api } from '../api'
+import { prettyAccelerator } from '../keyboard'
 
 const SOURCE_LABEL: Record<ContextItem['source'], string> = {
   typed: 'Note',
@@ -29,8 +30,8 @@ export function ContextPanel({ items, captureShortcut }: Props) {
       </header>
       {items.length === 0 ? (
         <p className="context__empty">
-          Paste or drop screenshots and code into the prompt, or press <kbd>{prettyAccelerator(captureShortcut)}</kbd>{' '}
-          anywhere to capture the clipboard.
+          Paste screenshots and code into the prompt, or press <kbd>{prettyAccelerator(captureShortcut)}</kbd> in any
+          app to capture the clipboard.
         </p>
       ) : (
         <ul className="context__list">
@@ -58,9 +59,4 @@ export function ContextPanel({ items, captureShortcut }: Props) {
       )}
     </aside>
   )
-}
-
-export function prettyAccelerator(accelerator: string): string {
-  const isMac = navigator.userAgent.includes('Mac')
-  return accelerator.replace('CommandOrControl', isMac ? '⌘' : 'Ctrl').replace(/\+/g, ' + ')
 }

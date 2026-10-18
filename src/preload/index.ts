@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 import { type DevCopilotApi, IPC } from '../shared/ipc'
-import type { ContextItem, SolveEvent } from '../shared/types'
+import type { ContextItem, SolveEvent, UiCommand } from '../shared/types'
 
 function subscribe<T>(channel: string, listener: (payload: T) => void): () => void {
   const wrapped = (_event: IpcRendererEvent, payload: T): void => listener(payload)
@@ -30,6 +30,11 @@ const api: DevCopilotApi = {
     cancel: (requestId) => ipcRenderer.invoke(IPC.solveCancel, requestId),
     onEvent: (listener) => subscribe<SolveEvent>(IPC.solveEvent, listener),
     resetConversation: (id) => ipcRenderer.invoke(IPC.conversationReset, id)
+  },
+  ui: {
+    onCommand: (listener) => subscribe<UiCommand>(IPC.uiCommand, listener),
+    hideWindow: () => ipcRenderer.invoke(IPC.windowHide),
+    failedShortcuts: () => ipcRenderer.invoke(IPC.shortcutsFailed)
   }
 }
 

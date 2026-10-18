@@ -38,4 +38,5 @@ export function registerIpcHandlers({ settings, buffer, pipeline, getWindow }: H
   ipcMain.handle(IPC.solveStart, (_e, request: SolveRequest) => pipeline.start(request))
   ipcMain.handle(IPC.solveCancel, (_e, requestId: string) => pipeline.cancel(requestId))
   ipcMain.handle(IPC.conversationReset, (_e, conversationId: string) => pipeline.reset(conversationId))
+  ipcMain.handle(IPC.windowHide, () => getWindow()?.hide())
 }

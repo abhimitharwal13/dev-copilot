@@ -32,15 +32,43 @@ Open **Settings** (the provider pill, top right), pick a provider, paste an API 
 | Settings with API keys encrypted by the OS keychain (`safeStorage`) | `src/main/settings/` |
 | Context buffer: typed text, pasted/dropped images and files, clipboard | `src/main/inputs/ContextBuffer.ts` |
 | Global shortcuts | `src/main/inputs/shortcuts.ts` |
+| Translucent overlay window | `src/main/window.ts` |
+| In-window key map and shortcut recorder | `src/renderer/src/keyboard.ts`, `components/ShortcutInput.tsx` |
 | React UI: streaming Markdown, Mermaid diagrams, copyable code, follow-up chips | `src/renderer/src/` |
 
-### Default shortcuts
+### The overlay
 
-| Shortcut | Action |
+The window is a frameless, transparent overlay that stays above other windows, so you can read the code behind it. Background opacity is adjustable (`Ctrl/⌘ + [` and `]`, or in Settings) while text stays fully opaque. On macOS the background also gets a native blur.
+
+![Translucent overlay over an editor](docs/overlay-translucent.png)
+
+### Keyboard first
+
+Everything works without the mouse. Global shortcuts work while another app is focused; all of them can be re-recorded in Settings (focus a field and press the new keys).
+
+| Global shortcut | Action |
 | --- | --- |
+| `Ctrl/⌘ + Shift + K` | Show the overlay with the prompt focused, to type a custom message |
 | `Ctrl/⌘ + Shift + V` | Add the clipboard (image or text) to the context buffer |
-| `Ctrl/⌘ + Shift + Space` | Show or hide the window |
-| `Ctrl/⌘ + Enter` | Send from the prompt box |
+| `Ctrl/⌘ + Shift + Enter` | Solve the captured context without typing |
+| `Ctrl/⌘ + Shift + Space` | Show or hide the overlay |
+| `Ctrl/⌘ + Shift + Up / Down` | Scroll the answer without focusing the overlay |
+| `Ctrl/⌘ + Alt + Arrow keys` | Move the overlay |
+
+| In the overlay | Action |
+| --- | --- |
+| `Enter` / `Shift + Enter` | Send / new line |
+| `Esc` | Stop the answer, close a dialog, or hide the overlay |
+| `Alt + 1…5` | Quick follow-ups (optimise space, edge cases, trade-offs, tests, another language) |
+| `Ctrl/⌘ + 1…3` | Switch DSA / LLD / System Design (re-runs the answer) |
+| `Ctrl/⌘ + N` | New problem |
+| `Ctrl/⌘ + Shift + C` | Copy the last code block |
+| `PageUp / PageDown`, `Alt + Up / Down` | Scroll the answer |
+| `Ctrl/⌘ + Shift + Backspace` / `Ctrl/⌘ + Shift + X` | Remove newest context item / clear context |
+| `Ctrl/⌘ + ,` | Settings (Tab between fields, `Ctrl/⌘ + Enter` saves, `Esc` cancels) |
+| `Ctrl/⌘ + /` or `F1` | Shortcut list |
+
+Code is written in Java by default; change it in Settings.
 
 ## Architecture
 

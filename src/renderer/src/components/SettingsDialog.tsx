@@ -5,10 +5,14 @@ import type {
   ProviderId,
   ProviderInfo,
   PublicSettings,
-  SettingsPatch
+  SettingsPatch,
+  ShortcutSettings
 } from '../../../shared/types'
-import { PROBLEM_TYPE_LABELS } from '../../../shared/types'
+import { PROBLEM_TYPE_LABELS, SHORTCUT_LABELS } from '../../../shared/types'
 import { api } from '../api'
+import { eventAccelerator } from '../keyboard'
+import { ShortcutInput } from './ShortcutInput'
+import { useDialogKeys } from './useDialogKeys'
 
 interface Props {
   settings: PublicSettings
@@ -17,7 +21,13 @@ interface Props {
   onClose(): void
 }
 
+const LANGUAGES = ['Java', 'Python', 'C++', 'JavaScript', 'TypeScript', 'Go', 'Kotlin', 'C#', 'Rust']
+/** Not wired up yet, so not editable. */
+const HIDDEN_SHORTCUTS: (keyof ShortcutSettings)[] = ['captureScreen', 'toggleRecording']
+
+/** Fully keyboard-operable: Tab between fields, Ctrl/⌘+Enter saves, Esc cancels. */
 export function SettingsDialog({ settings, providers, onSave, onClose }: Props) {
+  const ref = useDialogKeys<HTMLDivElement>(onClose)
   const [activeProvider, setActiveProvider] = useState<ProviderId>(settings.activeProvider)
   const [model, setModel] = useState(settings.providers[settings.activeProvider].model)
   const [baseUrl, setBaseUrl] = useState(settings.providers[settings.activeProvider].baseUrl ?? '')
@@ -25,10 +35,18 @@ export function SettingsDialog({ settings, providers, onSave, onClose }: Props) 
   const [language, setLanguage] = useState(settings.preferredLanguage)
   const [mode, setMode] = useState<PublicSettings['problemTypeMode']>(settings.problemTypeMode)
   const [llmFallback, setLlmFallback] = useState(settings.llmDetectionFallback)
+  const [opacity, setOpacity] = useState(settings.overlay.backgroundOpacity)
+  const [alwaysOnTop, setAlwaysOnTop] = useState(settings.overlay.alwaysOnTop)
+  const [shortcuts, setShortcuts] = useState<ShortcutSettings>(settings.shortcuts)
+  const [failed, setFailed] = useState<string[]>([])
   const [test, setTest] = useState<ConnectionTestResult | 'running' | null>(null)
 
   const info = providers.find((p) => p.id === activeProvider)
   const stored = settings.providers[activeProvider]
+
+  useEffect(() => {
+    void api.ui.failedShortcuts().then(setFailed)
+  }, [settings])
 
   useEffect(() => {
     setModel(settings.providers[activeProvider].model)
@@ -42,6 +60,8 @@ export function SettingsDialog({ settings, providers, onSave, onClose }: Props) 
     preferredLanguage: language,
     problemTypeMode: mode,
     llmDetectionFallback: llmFallback,
+    overlay: { backgroundOpacity: opacity, alwaysOnTop },
+    shortcuts,
     providers: {
       [activeProvider]: { model, baseUrl, ...(apiKey ? { apiKey } : {}) }
     }
@@ -60,24 +80,34 @@ export function SettingsDialog({ settings, providers, onSave, onClose }: Props) 
   }
 
   return (
-    <div className="dialog__backdrop" onClick={onClose}>
-      <div className="dialog" role="dialog" aria-label="Settings" onClick={(e) => e.stopPropagation()}>
+    <div className="dialog__backdrop">
+      <div
+        className="dialog"
+        role="dialog"
+        aria-label="Settings"
+        ref={ref}
+        tabIndex={-1}
+        onKeyDown={(e) => {
+          if (eventAccelerator(e) === 'CommandOrControl+Enter') {
+            e.preventDefault()
+            void save()
+          }
+        }}
+      >
         <h2>Settings</h2>
 
         <fieldset>
           <legend>Model provider</legend>
-          <div className="segmented">
-            {providers.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                className={p.id === activeProvider ? 'active' : ''}
-                onClick={() => setActiveProvider(p.id)}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
+          <label>
+            Provider
+            <select value={activeProvider} onChange={(e) => setActiveProvider(e.target.value as ProviderId)}>
+              {providers.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <label>
             Model
@@ -89,18 +119,13 @@ export function SettingsDialog({ settings, providers, onSave, onClose }: Props) 
 
           {info?.requiresApiKey && (
             <label>
-              API key
+              API key {stored.hasApiKey && <span className="ok">(saved; leave empty to keep, type to replace)</span>}
               <input
                 type="password"
                 value={apiKey}
-                placeholder={stored.hasApiKey ? 'Saved. Type to replace.' : 'Paste your API key'}
+                placeholder={stored.hasApiKey ? '••••••••' : 'Paste your API key'}
                 onChange={(e) => setApiKey(e.target.value)}
               />
-              {stored.hasApiKey && (
-                <button type="button" className="link" onClick={() => void onSave({ providers: { [activeProvider]: { apiKey: '' } } })}>
-                  Remove saved key
-                </button>
-              )}
             </label>
           )}
 
@@ -113,14 +138,30 @@ export function SettingsDialog({ settings, providers, onSave, onClose }: Props) 
             <button type="button" className="secondary" disabled={test === 'running'} onClick={() => void runTest()}>
               {test === 'running' ? 'Testing…' : 'Test connection'}
             </button>
-            {test && test !== 'running' && (
-              <span className={test.ok ? 'ok' : 'err'}>{test.message}</span>
+            {stored.hasApiKey && (
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => void onSave({ providers: { [activeProvider]: { apiKey: '' } } })}
+              >
+                Remove saved key
+              </button>
             )}
+            {test && test !== 'running' && <span className={test.ok ? 'ok' : 'err'}>{test.message}</span>}
           </div>
         </fieldset>
 
         <fieldset>
           <legend>Answers</legend>
+          <label>
+            Code language
+            <input list="languages" value={language} onChange={(e) => setLanguage(e.target.value)} />
+            <datalist id="languages">
+              {LANGUAGES.map((l) => (
+                <option key={l} value={l} />
+              ))}
+            </datalist>
+          </label>
           <label>
             Problem type
             <select value={mode} onChange={(e) => setMode(e.target.value as PublicSettings['problemTypeMode'])}>
@@ -136,13 +177,49 @@ export function SettingsDialog({ settings, providers, onSave, onClose }: Props) 
             <input type="checkbox" checked={llmFallback} onChange={(e) => setLlmFallback(e.target.checked)} />
             Ask the model to classify when keyword detection is unsure
           </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Overlay</legend>
           <label>
-            Preferred code language
-            <input value={language} onChange={(e) => setLanguage(e.target.value)} />
+            Background opacity: {Math.round(opacity * 100)}% (arrow keys adjust)
+            <input
+              type="range"
+              min={0.2}
+              max={1}
+              step={0.04}
+              value={opacity}
+              onChange={(e) => setOpacity(Number(e.target.value))}
+            />
+          </label>
+          <label className="checkbox">
+            <input type="checkbox" checked={alwaysOnTop} onChange={(e) => setAlwaysOnTop(e.target.checked)} />
+            Keep the overlay above other windows
           </label>
         </fieldset>
 
+        <fieldset>
+          <legend>Global shortcuts (focus a field and press the new keys)</legend>
+          {(Object.keys(SHORTCUT_LABELS) as (keyof ShortcutSettings)[])
+            .filter((k) => !HIDDEN_SHORTCUTS.includes(k))
+            .map((k) => (
+              <div className="shortcut-row" key={k}>
+                <label htmlFor={`sc-${k}`}>{SHORTCUT_LABELS[k]}</label>
+                <ShortcutInput
+                  id={`sc-${k}`}
+                  value={shortcuts[k]}
+                  modifiersOnly={k === 'moveWindowModifier'}
+                  onChange={(v) => setShortcuts((s) => ({ ...s, [k]: v }))}
+                />
+                {failed.includes(settings.shortcuts[k]) && (
+                  <span className="err small">Taken by another app</span>
+                )}
+              </div>
+            ))}
+        </fieldset>
+
         <div className="dialog__actions">
+          <span className="hint">Tab to move · Ctrl/⌘ + Enter to save · Esc to cancel</span>
           <button type="button" className="secondary" onClick={onClose}>
             Cancel
           </button>

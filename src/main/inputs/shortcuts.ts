@@ -1,11 +1,14 @@
 import { clipboard, globalShortcut, type BrowserWindow } from 'electron'
-import type { ShortcutSettings } from '../../shared/types'
+import type { ShortcutSettings, UiCommand } from '../../shared/types'
+import { nudgeWindow, showAndFocus } from '../window'
 import type { ContextBuffer } from './ContextBuffer'
 import type { ScreenCaptureService } from './InputSource'
 
 export interface ShortcutDeps {
   buffer: ContextBuffer
   getWindow(): BrowserWindow | null
+  /** Delivers a command to the renderer. */
+  sendCommand(command: UiCommand): void
   /** Absent until the screen capture iteration lands; its shortcut is then skipped. */
   screenCapture?: ScreenCaptureService
   /** Absent until the Whisper iteration lands; its shortcut is then skipped. */
@@ -44,19 +47,43 @@ export function registerShortcuts(settings: ShortcutSettings, deps: ShortcutDeps
       failed.push(accelerator)
     }
   }
+  const withWindow = (handler: (win: BrowserWindow) => void) => () => {
+    const win = deps.getWindow()
+    if (win) handler(win)
+  }
 
+  bind(
+    settings.customPrompt,
+    withWindow((win) => {
+      showAndFocus(win)
+      deps.sendCommand({ type: 'focusPrompt' })
+    })
+  )
+  bind(
+    settings.solveContext,
+    withWindow((win) => {
+      win.showInactive()
+      deps.sendCommand({ type: 'solveContext' })
+    })
+  )
   bind(settings.captureClipboard, () => {
     void captureClipboard(deps.buffer)
   })
-  bind(settings.toggleWindow, () => {
-    const win = deps.getWindow()
-    if (!win) return
-    if (win.isVisible() && win.isFocused()) win.hide()
-    else {
-      win.show()
-      win.focus()
+  bind(
+    settings.toggleWindow,
+    withWindow((win) => {
+      if (win.isVisible() && win.isFocused()) win.hide()
+      else showAndFocus(win)
+    })
+  )
+  // Scrolling and moving work without focusing the overlay, so the app underneath keeps the keyboard.
+  bind(settings.scrollUp, () => deps.sendCommand({ type: 'scroll', direction: 'up' }))
+  bind(settings.scrollDown, () => deps.sendCommand({ type: 'scroll', direction: 'down' }))
+  if (settings.moveWindowModifier) {
+    for (const direction of ['Left', 'Right', 'Up', 'Down'] as const) {
+      bind(`${settings.moveWindowModifier}+${direction}`, withWindow((win) => nudgeWindow(win, direction)))
     }
-  })
+  }
   if (deps.screenCapture) {
     const service = deps.screenCapture
     bind(settings.captureScreen, () => {

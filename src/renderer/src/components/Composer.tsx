@@ -1,14 +1,23 @@
-import { useState, type ClipboardEvent, type DragEvent, type KeyboardEvent } from 'react'
+import { useState, type ClipboardEvent, type DragEvent, type KeyboardEvent, type Ref } from 'react'
 import { api } from '../api'
+import { IS_MAC } from '../keyboard'
 
 interface Props {
   isFollowUp: boolean
   busy: boolean
   onSubmit(prompt: string): void
   onCancel(): void
+  textareaRef: Ref<HTMLTextAreaElement>
 }
 
-const FOLLOW_UPS = ['Optimise for space', 'More edge cases', 'Explain the trade-offs', 'Write tests', 'Another language']
+/** One-key refinements; each is bound to Alt + its number. */
+export const FOLLOW_UPS = [
+  'Optimise for space',
+  'More edge cases',
+  'Explain the trade-offs',
+  'Write tests',
+  'Another language'
+]
 
 function readAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -27,7 +36,10 @@ async function addFiles(files: FileList): Promise<void> {
   }
 }
 
-export function Composer({ isFollowUp, busy, onSubmit, onCancel }: Props) {
+const MOD = IS_MAC ? '⌘' : 'Ctrl'
+const ALT = IS_MAC ? '⌥' : 'Alt'
+
+export function Composer({ isFollowUp, busy, onSubmit, onCancel, textareaRef }: Props) {
   const [prompt, setPrompt] = useState('')
   const [dragging, setDragging] = useState(false)
 
@@ -38,7 +50,8 @@ export function Composer({ isFollowUp, busy, onSubmit, onCancel }: Props) {
   }
 
   const onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>): void => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    // Enter sends; Shift+Enter adds a newline. Ctrl/⌘+Enter also sends, for muscle memory.
+    if (e.key === 'Enter' && !e.shiftKey && !e.altKey && !e.nativeEvent.isComposing) {
       e.preventDefault()
       submit()
     }
@@ -69,30 +82,37 @@ export function Composer({ isFollowUp, busy, onSubmit, onCancel }: Props) {
     >
       {isFollowUp && (
         <div className="composer__chips">
-          {FOLLOW_UPS.map((label) => (
+          {FOLLOW_UPS.map((label, i) => (
             <button key={label} type="button" className="chip" disabled={busy} onClick={() => submit(label)}>
+              <kbd>
+                {ALT} {i + 1}
+              </kbd>{' '}
               {label}
             </button>
           ))}
         </div>
       )}
       <textarea
+        ref={textareaRef}
         value={prompt}
+        autoFocus
         placeholder={
           isFollowUp
             ? 'Ask a follow-up to refine the answer…'
-            : 'Describe the problem, paste it, or leave empty to solve the attached context…'
+            : 'Type or paste the problem, or press Enter with an empty box to solve the captured context…'
         }
         onChange={(e) => setPrompt(e.target.value)}
         onKeyDown={onKeyDown}
         onPaste={onPaste}
-        rows={isFollowUp ? 2 : 5}
+        rows={isFollowUp ? 2 : 4}
       />
       <div className="composer__actions">
-        <span className="hint">Ctrl/⌘ + Enter to send · paste or drop images and files</span>
+        <span className="hint">
+          <kbd>Enter</kbd> send · <kbd>Shift + Enter</kbd> new line · <kbd>{MOD} + /</kbd> all shortcuts
+        </span>
         {busy ? (
           <button type="button" className="secondary" onClick={onCancel}>
-            Stop
+            Stop <kbd>Esc</kbd>
           </button>
         ) : (
           <button type="button" className="primary" onClick={() => submit()}>

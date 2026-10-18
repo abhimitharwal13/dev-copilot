@@ -58,10 +58,25 @@ export interface Settings {
   preferredLanguage: string
   temperature: number
   maxTokens: number
+  overlay: OverlaySettings
   shortcuts: ShortcutSettings
 }
 
+export interface OverlaySettings {
+  /** Alpha of the window background, 0.2..1. Text always stays opaque. */
+  backgroundOpacity: number
+  alwaysOnTop: boolean
+}
+
+/**
+ * Global shortcuts: they work while another app has focus, so the overlay is
+ * fully usable from the keyboard. Values are Electron accelerators; '' disables one.
+ */
 export interface ShortcutSettings {
+  /** Shows the overlay with the prompt box focused, ready to type a message. */
+  customPrompt: string
+  /** Sends the context buffer to the model without typing anything. */
+  solveContext: string
   /** Adds the clipboard (text or image) to the context buffer. */
   captureClipboard: string
   /** Screen region capture; wired up in a later iteration. */
@@ -70,7 +85,29 @@ export interface ShortcutSettings {
   toggleRecording: string
   /** Show / hide the main window. */
   toggleWindow: string
+  scrollUp: string
+  scrollDown: string
+  /** Held with an arrow key to move the window, e.g. `CommandOrControl+Alt` + Left. */
+  moveWindowModifier: string
 }
+
+export const SHORTCUT_LABELS: Record<keyof ShortcutSettings, string> = {
+  customPrompt: 'Type a custom prompt',
+  solveContext: 'Solve the captured context',
+  captureClipboard: 'Capture clipboard',
+  captureScreen: 'Capture screen region (coming soon)',
+  toggleRecording: 'Voice input (coming soon)',
+  toggleWindow: 'Show / hide overlay',
+  scrollUp: 'Scroll answer up',
+  scrollDown: 'Scroll answer down',
+  moveWindowModifier: 'Move overlay (+ arrow keys)'
+}
+
+/** Commands main sends to the renderer, mostly in response to global shortcuts. */
+export type UiCommand =
+  | { type: 'focusPrompt' }
+  | { type: 'solveContext' }
+  | { type: 'scroll'; direction: 'up' | 'down' }
 
 /** Settings as the renderer sees them: secrets replaced by flags. */
 export interface PublicProviderConfig extends Omit<ProviderConfig, 'apiKey'> {
@@ -81,9 +118,10 @@ export interface PublicSettings extends Omit<Settings, 'providers'> {
 }
 
 /** Partial update from the renderer. `apiKey: ''` clears a stored key. */
-export interface SettingsPatch extends Partial<Omit<Settings, 'providers' | 'shortcuts'>> {
+export interface SettingsPatch extends Partial<Omit<Settings, 'providers' | 'shortcuts' | 'overlay'>> {
   providers?: Partial<Record<ProviderId, Partial<ProviderConfig>>>
   shortcuts?: Partial<ShortcutSettings>
+  overlay?: Partial<OverlaySettings>
 }
 
 export interface DetectionResult {
