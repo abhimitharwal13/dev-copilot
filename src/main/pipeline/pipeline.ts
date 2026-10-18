@@ -76,7 +76,10 @@ export class SolvePipeline {
       let text = ''
       let usage: TokenUsage | undefined
       for await (const chunk of provider.stream({
-        system: buildSystemPrompt(conversation.problemType, { preferredLanguage: settings.preferredLanguage }),
+        system: buildSystemPrompt(conversation.problemType, {
+          preferredLanguage: settings.preferredLanguage,
+          stepMode: settings.interviewStepMode
+        }),
         messages,
         temperature: settings.temperature,
         maxTokens: settings.maxTokens,
@@ -109,7 +112,7 @@ export class SolvePipeline {
     const forced = request.problemType ?? (settings.problemTypeMode === 'auto' ? undefined : settings.problemTypeMode)
     let detection: DetectionResult
     if (forced) {
-      detection = { type: forced, confidence: 1, method: 'manual', scores: { dsa: 0, lld: 0, hld: 0 } }
+      detection = { type: forced, confidence: 1, method: 'manual', scores: { dsa: 0, lld: 0, hld: 0, db: 0 } }
     } else {
       const context = this.deps.getContext(request.contextIds)
       detection = await detectProblemType(detectionText(request.prompt, context), {

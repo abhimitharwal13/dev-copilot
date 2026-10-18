@@ -1,6 +1,6 @@
 # Dev Copilot (desktop)
 
-An Electron scratchpad that turns coding problems and design discussions into structured technical breakdowns. Paste or capture a problem, and it detects whether it is a **DSA** problem, a **Low-Level Design** or a **System Design**, then answers with the matching template. Follow-ups refine the same answer.
+An Electron scratchpad that turns coding problems and design discussions into structured technical breakdowns. Paste or capture a problem, and it detects whether it is a **DSA** problem, a **Low-Level Design**, a **System Design** or a **Database Design**, then answers with the matching template. Follow-ups refine the same answer.
 
 ![LLD answer with a rendered class diagram](docs/screenshot-lld.png)
 
@@ -27,7 +27,7 @@ Open **Settings** (the provider pill, top right), pick a provider, paste an API 
 | OpenAI, Groq and Ollama via one OpenAI-compatible client | `src/main/providers/openaiCompatible.ts` |
 | Provider registry (add a vendor here) | `src/main/providers/registry.ts` |
 | Problem-type detection: keyword heuristics, model fallback when unsure | `src/main/pipeline/detector.ts` |
-| DSA / LLD / System Design output templates | `src/main/pipeline/templates/` |
+| DSA / LLD / System Design / Database Design output templates | `src/main/pipeline/templates/` |
 | Prompt assembly and the solve pipeline with follow-up history | `src/main/pipeline/promptBuilder.ts`, `pipeline.ts` |
 | Settings with API keys encrypted by the OS keychain (`safeStorage`) | `src/main/settings/` |
 | Context buffer: typed text, pasted/dropped images and files, clipboard | `src/main/inputs/ContextBuffer.ts` |
@@ -59,10 +59,14 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | --- | --- |
 | `Enter` / `Shift + Enter` | Send / new line |
 | `Esc` | Stop the answer, close a dialog, or hide the overlay |
-| `Alt + 1…5` | Quick follow-ups for the current type (DSA: optimise space, edge cases, tests…; LLD: thread safety, new feature, patterns…; System Design: scale 10x, deep dive, schema & sharding, sequence diagram, interviewer follow-ups) |
-| `Ctrl/⌘ + 1…3` | Switch DSA / LLD / System Design (re-runs the answer) |
+| `Alt + 1…5` | Quick follow-ups for the current type (DSA: optimise space, edge cases, tests…; LLD: thread safety, new feature, patterns…; System Design: scale 10x, deep dive, schema & sharding, sequence diagram, interviewer follow-ups; Database: sample data, query tuning, NoSQL version…) |
+| `Ctrl/⌘ + 1…4` | Switch DSA / LLD / System Design / Database (re-runs the answer) |
 | `Ctrl/⌘ + N` | New problem |
-| `Ctrl/⌘ + Shift + C` | Copy the last code block |
+| `Ctrl/⌘ + Shift + C` | Copy the solution code (every block of the Code / Implementation / Tables section) |
+| `Ctrl/⌘ + J` / `Ctrl/⌘ + Shift + J` | Jump to the next / previous section |
+| `Ctrl/⌘ + D` | Open the diagram in view full-size: `+` / `-` zoom, `0` fit, arrows scroll, `Tab` next diagram, `Ctrl/⌘ + S` save SVG |
+| `Ctrl/⌘ + S` | Save the conversation as Markdown |
+| `Ctrl/⌘ + I` | Interview step mode: clarifying questions first, then one section per `Alt + N` |
 | `PageUp / PageDown`, `Alt + Up / Down` | Scroll the answer |
 | `Ctrl/⌘ + Shift + Backspace` / `Ctrl/⌘ + Shift + X` | Remove newest context item / clear context |
 | `Ctrl/⌘ + ,` | Settings (Tab between fields, `Ctrl/⌘ + Enter` saves, `Esc` cancels) |
@@ -84,7 +88,7 @@ flowchart LR
     Handlers --> Settings[SettingsStore]
     Shortcuts[Global shortcuts] --> Buffer
     Pipeline --> Detector[Problem detector]
-    Pipeline --> Templates[DSA / LLD / HLD templates]
+    Pipeline --> Templates[DSA / LLD / HLD / DB templates]
     Pipeline --> Registry[Provider registry]
     Registry --> Claude[Anthropic]
     Registry --> OAI[OpenAI-compatible: OpenAI, Groq, Ollama]

@@ -11,6 +11,7 @@ export function defaultSettings(): Settings {
     problemTypeMode: 'auto',
     llmDetectionFallback: true,
     preferredLanguage: 'Java',
+    interviewStepMode: false,
     temperature: 0.2,
     maxTokens: 16000,
     overlay: { backgroundOpacity: 0.72, alwaysOnTop: true },

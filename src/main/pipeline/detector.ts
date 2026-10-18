@@ -52,6 +52,12 @@ const SIGNALS: Record<ProblemType, Signal[]> = {
     { pattern: /\blatency\b|\bthroughput\b|\bcapacity estimation\b|\bback[- ]of[- ]the[- ]envelope\b|\bstorage estimate\b|\bsla\b/, weight: 2 },
     { pattern: /\bredis\b|\bcassandra\b|\bdynamodb\b|\bnosql\b|\bdatabase schema\b|\bapi (design|contracts?|endpoints?)\b|\brest api\b/, weight: 1 },
     { pattern: /\brate limiter\b|\bkey[- ]value store\b|\bdistributed cache\b/, weight: 2 }
+  ],
+  db: [
+    { pattern: /\bdatabase (schema|design|model)\b|\bschema design\b|\bdesign (the |a |an )?(database|db|schema|tables?|data model)\b|\bdata model(l)?ing\b/, weight: 4 },
+    { pattern: /\ber diagram\b|\berd\b|\bentity[- ]relationship\b/, weight: 4 },
+    { pattern: /\bnormali[sz](e|ation)\b|\b(1nf|2nf|3nf|bcnf)\b|\bdenormali[sz]/, weight: 3 },
+    { pattern: /\bschemas?\b|\b(primary|foreign|composite) keys?\b|\bddl\b|\bsql tables?\b|\bindex(es|ing)? (on|for) (the )?columns?\b/, weight: 2 }
   ]
 }
 
@@ -67,7 +73,7 @@ const DUAL_SIGNALS: RegExp[] = [
 ]
 const DUAL_WEIGHT = 3
 
-export const TYPES: ProblemType[] = ['dsa', 'lld', 'hld']
+export const TYPES: ProblemType[] = ['dsa', 'lld', 'hld', 'db']
 
 /** Below this top score the heuristic is considered unsure. */
 const MIN_SCORE = 3
@@ -76,7 +82,7 @@ const MIN_CONFIDENCE = 0.55
 
 export function scoreText(text: string): Record<ProblemType, number> {
   const lower = text.toLowerCase()
-  const scores = { dsa: 0, lld: 0, hld: 0 }
+  const scores = { dsa: 0, lld: 0, hld: 0, db: 0 }
   for (const type of TYPES) {
     for (const { pattern, weight } of SIGNALS[type]) {
       if (pattern.test(lower)) scores[type] += weight
@@ -95,14 +101,14 @@ function isDualProduct(lower: string): boolean {
 
 /** The other design type when the text names a product asked both ways and nothing settles it. */
 function designAlternative(text: string, scores: Record<ProblemType, number>, type: ProblemType): ProblemType | undefined {
-  if (type === 'dsa' || !isDualProduct(text.toLowerCase())) return undefined
+  if ((type !== 'lld' && type !== 'hld') || !isDualProduct(text.toLowerCase())) return undefined
   if (Math.abs(scores.lld - scores.hld) >= DUAL_WEIGHT) return undefined
   return type === 'lld' ? 'hld' : 'lld'
 }
 
 export function detectHeuristic(text: string): DetectionResult & { certain: boolean } {
   const scores = scoreText(text)
-  const total = scores.dsa + scores.lld + scores.hld
+  const total = scores.dsa + scores.lld + scores.hld + scores.db
   // On an LLD/HLD tie, prefer system design: "design <product>" usually means a system design round.
   const ranked = [...TYPES].sort((a, b) => scores[b] - scores[a] || (b === 'hld' ? 1 : a === 'hld' ? -1 : 0))
   const top = ranked[0]
@@ -127,10 +133,11 @@ Reply with exactly one word:
 - dsa: a data structures and algorithms / coding problem with a precise input and output
 - lld: low-level / object-oriented design of classes, interfaces and patterns for one component
 - hld: system design of a distributed service: scale, storage, APIs, architecture
-A request to design a named product or service (for example "design BookMyShow") with no mention of classes is hld.`
+- db: database or schema design: tables, keys, indexes, ER diagram, normalization, queries
+A request to design a named product or service (for example "design BookMyShow") with no mention of classes or a database schema is hld.`
 
 export function parseClassification(reply: string): ProblemType | undefined {
-  const match = reply.toLowerCase().match(/\b(dsa|lld|hld)\b/)
+  const match = reply.toLowerCase().match(/\b(dsa|lld|hld|db)\b/)
   return match?.[1] as ProblemType | undefined
 }
 

@@ -34,6 +34,7 @@ const api: DevCopilotApi = {
   ui: {
     onCommand: (listener) => subscribe<UiCommand>(IPC.uiCommand, listener),
     hideWindow: () => ipcRenderer.invoke(IPC.windowHide),
+    saveFile: (defaultName, content) => ipcRenderer.invoke(IPC.fileSave, defaultName, content),
     failedShortcuts: () => ipcRenderer.invoke(IPC.shortcutsFailed)
   }
 }

@@ -3,13 +3,17 @@
  * Nothing in this file may import Electron or Node APIs.
  */
 
-export type ProblemType = 'dsa' | 'lld' | 'hld'
+export type ProblemType = 'dsa' | 'lld' | 'hld' | 'db'
 
 export const PROBLEM_TYPE_LABELS: Record<ProblemType, string> = {
   dsa: 'Data Structures & Algorithms',
   lld: 'Low-Level Design',
-  hld: 'System Design'
+  hld: 'System Design',
+  db: 'Database Design'
 }
+
+/** The message the "next section" key (Alt+N) sends in interview step mode. */
+export const NEXT_SECTION_PROMPT = 'Next section.'
 
 export type ProviderId = 'anthropic' | 'openai' | 'groq' | 'ollama'
 
@@ -56,6 +60,8 @@ export interface Settings {
   /** Use the active model to classify when keyword heuristics are unsure. */
   llmDetectionFallback: boolean
   preferredLanguage: string
+  /** Interview pacing: clarifying questions first, then one section per "next section". */
+  interviewStepMode: boolean
   temperature: number
   maxTokens: number
   overlay: OverlaySettings

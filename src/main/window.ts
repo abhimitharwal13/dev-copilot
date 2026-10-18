@@ -24,7 +24,8 @@ export function createOverlayWindow(overlay: OverlaySettings): BrowserWindow {
     backgroundColor: '#00000000',
     hasShadow: false,
     alwaysOnTop: overlay.alwaysOnTop,
-    skipTaskbar: false,
+    // A HUD, not an app window: Ctrl/⌘+Shift+Space brings it back.
+    skipTaskbar: true,
     title: 'Dev Copilot',
     // Real backdrop blur where the OS offers it; elsewhere the CSS alpha alone gives translucency.
     ...(process.platform === 'darwin' ? { vibrancy: 'under-window' as const, visualEffectState: 'active' as const } : {}),

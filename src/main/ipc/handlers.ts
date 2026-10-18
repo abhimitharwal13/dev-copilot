@@ -1,4 +1,6 @@
-import { ipcMain, type BrowserWindow } from 'electron'
+import { writeFile } from 'node:fs/promises'
+import { extname, join } from 'node:path'
+import { app, dialog, ipcMain, type BrowserWindow } from 'electron'
 import { IPC } from '../../shared/ipc'
 import type { ContextSource, ProviderId, SettingsPatch, SolveRequest } from '../../shared/types'
 import type { ContextBuffer } from '../inputs/ContextBuffer'
@@ -39,4 +41,16 @@ export function registerIpcHandlers({ settings, buffer, pipeline, getWindow }: H
   ipcMain.handle(IPC.solveCancel, (_e, requestId: string) => pipeline.cancel(requestId))
   ipcMain.handle(IPC.conversationReset, (_e, conversationId: string) => pipeline.reset(conversationId))
   ipcMain.handle(IPC.windowHide, () => getWindow()?.hide())
+  ipcMain.handle(IPC.fileSave, async (_e, defaultName: string, content: string) => {
+    const win = getWindow()
+    const ext = extname(defaultName).slice(1)
+    const options = {
+      defaultPath: join(app.getPath('documents'), defaultName),
+      filters: [{ name: ext.toUpperCase(), extensions: [ext] }]
+    }
+    const { canceled, filePath } = win ? await dialog.showSaveDialog(win, options) : await dialog.showSaveDialog(options)
+    if (canceled || !filePath) return null
+    await writeFile(filePath, content, 'utf8')
+    return filePath
+  })
 }

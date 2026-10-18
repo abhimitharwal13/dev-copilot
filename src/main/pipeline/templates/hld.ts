@@ -27,12 +27,12 @@ export const HLD_TEMPLATE: OutputTemplate = {
     {
       heading: 'High-Level Architecture',
       instructions:
-        'A Mermaid `flowchart LR` in a fenced ```mermaid block showing clients, load balancers, services, caches, queues and data stores, followed by a walkthrough of the main read and write paths.'
+        'A Mermaid `flowchart LR` in a fenced ```mermaid block showing clients, load balancers, services, caches, queues and data stores, followed by a walkthrough of the main read and write paths, then a Mermaid `sequenceDiagram` of the most critical write flow (for example hold, pay and confirm for a booking) including its failure path.'
     },
     {
       heading: 'Deep Dives',
       instructions:
-        'Two or three of the hardest components in depth (for example feed fan-out, ID generation, sharding strategy, or consistency model).'
+        'The two or three problems that are hardest for this particular system, explained down to the exact mechanism (queries, locks, data structures). Pick them from the domain, for example: seat locking, double booking and hold expiry for ticketing; inventory and payment idempotency for e-commerce; fan-out for feeds; driver matching and location updates for ride-hailing; ordering and delivery receipts for chat; ID generation and redirects for URL shorteners.'
     },
     {
       heading: 'Trade-offs & Bottlenecks',

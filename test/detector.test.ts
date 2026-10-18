@@ -76,6 +76,20 @@ describe('detectHeuristic', () => {
     expect(detectHeuristic('design a coupon platform')).toMatchObject({ type: 'hld', certain: false })
   })
 
+  it.each([
+    'Design the database schema for an e-commerce site',
+    'database design for instagram',
+    'design a schema for a library management system',
+    'design database for parking lot',
+    'Draw the ER diagram for a hospital management system and normalize it to 3NF'
+  ])('classifies %j as database design', (text) => {
+    expect(detectHeuristic(text)).toMatchObject({ type: 'db', certain: true })
+  })
+
+  it('keeps a plain parking lot as LLD', () => {
+    expect(detectHeuristic('design parking lot')).toMatchObject({ type: 'lld', certain: true })
+  })
+
   it('defaults to DSA with zero confidence when there is no signal', () => {
     const r = detectHeuristic('hello there')
     expect(r).toMatchObject({ type: 'dsa', confidence: 0, certain: false })
@@ -85,6 +99,7 @@ describe('detectHeuristic', () => {
 describe('parseClassification', () => {
   it('extracts the label from noisy replies', () => {
     expect(parseClassification('HLD')).toBe('hld')
+    expect(parseClassification('db')).toBe('db')
     expect(parseClassification('The answer is: lld.')).toBe('lld')
     expect(parseClassification('not sure')).toBeUndefined()
   })

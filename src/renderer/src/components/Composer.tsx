@@ -33,7 +33,7 @@ export const FOLLOW_UPS: Record<ProblemType, FollowUp[]> = {
     followUp('Make it thread-safe', 'Make the design thread-safe: show where locking or atomic operations are needed and why.'),
     followUp('Add a feature', 'Extend the design with the most likely new requirement an interviewer would add, and show which classes change.'),
     followUp('Explain patterns', 'Explain each design pattern used, the alternative considered, and why this one fits.'),
-    followUp('Sequence diagram', 'Draw a Mermaid sequenceDiagram of the main use case through the classes.'),
+    followUp('Edge cases & failures', 'List the edge cases and failure scenarios (invalid input, full capacity, concurrent requests) and show how the code handles each.'),
     followUp('Write tests', 'Write unit tests for the core classes.')
   ],
   hld: [
@@ -42,6 +42,13 @@ export const FOLLOW_UPS: Record<ProblemType, FollowUp[]> = {
     followUp('Schema & sharding', 'Give the full database schema with indexes, and the sharding or partitioning strategy with its trade-offs.'),
     followUp('Sequence diagram', 'Draw a Mermaid sequenceDiagram of the main write flow end to end, including failure and retry paths.'),
     followUp('Interviewer follow-ups', 'List the follow-up questions an interviewer is most likely to ask about this design, each with a strong short answer.')
+  ],
+  db: [
+    followUp('Sample data', 'Insert a few realistic sample rows per table and show the result of each key query on them.'),
+    followUp('Optimise a query', 'Take the most expensive key query, walk through its likely EXPLAIN plan, and show the index or rewrite that speeds it up.'),
+    followUp('NoSQL version', 'Redesign the data model for a document or wide-column store (MongoDB or Cassandra), driven by the same access patterns, and compare.'),
+    followUp('Add a feature', 'Add the most likely new requirement and show the schema migration, written to run without downtime.'),
+    followUp('Interviewer follow-ups', 'List the follow-up questions an interviewer is most likely to ask about this schema, each with a strong short answer.')
   ]
 }
 

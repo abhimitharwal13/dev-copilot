@@ -147,3 +147,7 @@ kbd { font-family: var(--mono); font-size: 12px; padding: 1px 5px; border: 1px s
   .topbar .hint { display: none; }
   .body { grid-template-columns: 220px 1fr; }
 }
+.diagram-viewer { width: calc(100vw - 32px); height: calc(100vh - 32px); max-width: none; max-height: none; display: flex; flex-direction: column; padding: 12px; }
+.diagram-viewer__bar { padding: 0 4px 8px; }
+.diagram-viewer__stage { flex: 1; overflow: auto; outline: none; background: var(--panel); border-radius: var(--radius); }
+.diagram-viewer__stage svg { display: block; margin: 0 auto; }

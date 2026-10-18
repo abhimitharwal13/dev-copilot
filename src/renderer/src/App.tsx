@@ -7,32 +7,29 @@ import type {
   SettingsPatch,
   UiCommand
 } from '../../shared/types'
-import { PROBLEM_TYPE_LABELS } from '../../shared/types'
+import { NEXT_SECTION_PROMPT, PROBLEM_TYPE_LABELS } from '../../shared/types'
 import { api } from './api'
 import { Composer, FOLLOW_UPS } from './components/Composer'
 import { ContextPanel } from './components/ContextPanel'
+import { DiagramViewer } from './components/DiagramViewer'
 import { Markdown } from './components/Markdown'
 import { SettingsDialog } from './components/SettingsDialog'
 import { ShortcutHelp } from './components/ShortcutHelp'
+import { conversationMarkdown, slug, solutionCode } from './answer'
 import { useSolve } from './hooks/useSolve'
 import { IS_MAC, prettyAccelerator, useKeyMap, type KeyMap } from './keyboard'
 
-const TYPE_ORDER: ProblemType[] = ['dsa', 'lld', 'hld']
-const SHORT_LABEL: Record<ProblemType, string> = { dsa: 'DSA', lld: 'LLD', hld: 'System Design' }
+const TYPE_ORDER: ProblemType[] = ['dsa', 'lld', 'hld', 'db']
+const SHORT_LABEL: Record<ProblemType, string> = { dsa: 'DSA', lld: 'LLD', hld: 'System Design', db: 'Database' }
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 const OPACITY_STEP = 0.08
-
-/** Last fenced code block in a Markdown answer, skipping diagrams. */
-function lastCodeBlock(markdown: string): string | undefined {
-  const blocks = [...markdown.matchAll(/```([\w+#-]*)\n([\s\S]*?)```/g)].filter((m) => m[1] !== 'mermaid')
-  return blocks.at(-1)?.[2].replace(/\n$/, '')
-}
 
 export function App() {
   const [settings, setSettings] = useState<PublicSettings | null>(null)
   const [providers, setProviders] = useState<ProviderInfo[]>([])
   const [context, setContext] = useState<ContextItem[]>([])
-  const [dialog, setDialog] = useState<'settings' | 'help' | null>(null)
+  const [dialog, setDialog] = useState<'settings' | 'help' | 'diagram' | null>(null)
+  const [diagrams, setDiagrams] = useState<{ svgs: string[]; start: number }>({ svgs: [], start: 0 })
   const [toast, setToast] = useState<string | null>(null)
   /** Type picked before the first question; `undefined` follows settings. */
   const [typeOverride, setTypeOverride] = useState<ProblemType | undefined>()
@@ -53,7 +50,13 @@ export function App() {
   useEffect(() => {
     const el = conversation.current
     if (el && stickToBottom.current) el.scrollTop = el.scrollHeight
-  }, [state.turns.length, lastAnswerLength])
+  }, [lastAnswerLength])
+  // A new question scrolls to its own top, so a long answer is read from the start.
+  useEffect(() => {
+    const el = conversation.current
+    const turn = el?.querySelector<HTMLElement>('.turn:last-of-type')
+    if (el && turn) el.scrollTop = turn.offsetTop - el.offsetTop
+  }, [state.turns.length])
 
   const flash = (message: string): void => {
     setToast(message)
@@ -69,7 +72,7 @@ export function App() {
       flash('Type a prompt or capture some context first')
       return
     }
-    stickToBottom.current = true
+    stickToBottom.current = false
     void ask(text, { problemType: state.turns.length === 0 ? typeOverride : undefined })
   }
 
@@ -96,6 +99,38 @@ export function App() {
     const el = conversation.current
     if (!el) return
     el.scrollBy({ top: (direction === 'up' ? -0.8 : 0.8) * el.clientHeight })
+  }
+
+  /** Scrolls to the next (1) or previous (-1) `##` section of the conversation. */
+  const jumpSection = (direction: 1 | -1): void => {
+    const el = conversation.current
+    if (!el) return
+    const top = el.getBoundingClientRect().top
+    const offsets = [...el.querySelectorAll<HTMLElement>('.turn h2')].map((h) => h.getBoundingClientRect().top - top)
+    const target = direction === 1 ? offsets.find((o) => o > 8) : offsets.filter((o) => o < -8).at(-1)
+    if (target !== undefined) el.scrollTop += target - 4
+  }
+
+  /** Opens the diagram viewer on the first diagram in view (else the last one). */
+  const openDiagrams = (): void => {
+    const el = conversation.current
+    const svgs = [...(el?.querySelectorAll<SVGSVGElement>('.mermaid svg') ?? [])]
+    if (!el || svgs.length === 0) return flash('No diagram to open yet')
+    const view = el.getBoundingClientRect()
+    const visible = svgs.findIndex((s) => {
+      const r = s.getBoundingClientRect()
+      return r.bottom > view.top && r.top < view.bottom
+    })
+    setDiagrams({ svgs: svgs.map((s) => s.outerHTML), start: visible === -1 ? svgs.length - 1 : visible })
+    setDialog('diagram')
+  }
+
+  const exportMarkdown = (): void => {
+    if (!state.turns.some((t) => t.answer)) return flash('Nothing to save yet')
+    const label = state.detection ? PROBLEM_TYPE_LABELS[state.detection.type] : 'Answer'
+    void api.ui
+      .saveFile(`${slug(state.turns[0].prompt)}.md`, conversationMarkdown(state.turns, label))
+      .then((path) => path && flash('Saved'))
   }
 
   const changeOpacity = (delta: number): void => {
@@ -133,11 +168,21 @@ export function App() {
     'CommandOrControl+/': () => setDialog('help'),
     F1: () => setDialog('help'),
     'CommandOrControl+Shift+C': () => {
-      const code = lastCodeBlock(lastAnswer)
+      const code = solutionCode(lastAnswer, state.detection?.type)
       if (!code) return flash('No code block to copy yet')
-      void navigator.clipboard.writeText(code).then(() => flash('Copied the last code block'))
+      void navigator.clipboard.writeText(code).then(() => flash('Copied the code'))
     },
     'CommandOrControl+Shift+X': () => void api.context.clear(),
+    'CommandOrControl+D': openDiagrams,
+    'CommandOrControl+J': () => jumpSection(1),
+    'CommandOrControl+Shift+J': () => jumpSection(-1),
+    'CommandOrControl+S': exportMarkdown,
+    'CommandOrControl+I': () => {
+      const next = !settings?.interviewStepMode
+      void saveSettings({ interviewStepMode: next }).then(() =>
+        flash(next ? 'Interview step mode on: Alt + N for the next section' : 'Interview step mode off')
+      )
+    },
     'CommandOrControl+Shift+Backspace': () => {
       const newest = context.at(-1)
       if (newest) void api.context.remove(newest.id)
@@ -153,6 +198,7 @@ export function App() {
   const answerType = state.detection?.type ?? typeOverride ?? 'dsa'
   if (isFollowUp && !state.busy) {
     FOLLOW_UPS[answerType].forEach(({ prompt }, i) => (keyMap[`Alt+${i + 1}`] = () => submit(prompt)))
+    if (settings?.interviewStepMode) keyMap['Alt+N'] = () => submit(NEXT_SECTION_PROMPT)
   }
   // Dialogs own the keyboard while open (including recording new shortcuts).
   useKeyMap(dialog ? {} : keyMap)
@@ -195,6 +241,7 @@ export function App() {
           <span className="provider">
             {active?.label ?? settings.activeProvider} · {settings.providers[settings.activeProvider].model} ·{' '}
             {settings.preferredLanguage}
+            {settings.interviewStepMode ? ' · step mode' : ''}
           </span>
           <span className="hint">
             <kbd>{MOD} + ,</kbd> settings · <kbd>{MOD} + /</kbd> keys · <kbd>Esc</kbd> hide
@@ -277,6 +324,9 @@ export function App() {
           onSave={saveSettings}
           onClose={() => setDialog(null)}
         />
+      )}
+      {dialog === 'diagram' && (
+        <DiagramViewer svgs={diagrams.svgs} start={diagrams.start} onClose={() => setDialog(null)} />
       )}
       {dialog === 'help' && <ShortcutHelp shortcuts={settings.shortcuts} onClose={() => setDialog(null)} />}
     </div>

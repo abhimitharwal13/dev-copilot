@@ -1,9 +1,20 @@
 import type { ChatMessage, ContentPart, ContextItem, ProblemType } from '../../shared/types'
+import { NEXT_SECTION_PROMPT } from '../../shared/types'
 import { TEMPLATES } from './templates'
 
 export interface SystemPromptOptions {
   preferredLanguage: string
+  /** Pace the answer like an interview: one section per turn. */
+  stepMode?: boolean
 }
+
+
+const STEP_MODE_RULES = [
+  'Interview step mode is on: pace the answer the way a live interview goes.',
+  'In the first reply, start with `## Clarifying Questions`: up to five short questions the candidate should ask the interviewer, each with the assumption you will use if there is no answer. Then write only section 1 of the output structure.',
+  `When the user says "${NEXT_SECTION_PROMPT}", write only the next section of the output structure that has not been written yet, using its exact heading.`,
+  'End every step-mode reply with one line: `Next: <heading of the next section>`, or `Next: done` after the last section.'
+]
 
 export function buildSystemPrompt(type: ProblemType, options: SystemPromptOptions): string {
   const template = TEMPLATES[type]
@@ -15,7 +26,8 @@ export function buildSystemPrompt(type: ProblemType, options: SystemPromptOption
     ...template.rules,
     'Format everything as GitHub-flavoured Markdown. Use the exact `##` headings below, in order.',
     'Context snippets may come from screenshots, the clipboard or speech transcription and can contain OCR or transcription noise; infer the intended problem.',
-    'For follow-up messages, answer only what changed (for example a space-optimised version or extra edge cases), reusing the same headings where they apply, instead of repeating the whole answer.'
+    'For follow-up messages, answer only what changed (for example a space-optimised version or extra edge cases), reusing the same headings where they apply, instead of repeating the whole answer.',
+    ...(options.stepMode ? STEP_MODE_RULES : [])
   ]
     .map((r) => `- ${r}`)
     .join('\n')

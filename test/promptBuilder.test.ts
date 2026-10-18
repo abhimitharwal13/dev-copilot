@@ -57,3 +57,17 @@ describe('detectionText', () => {
     expect(detectionText('a', [text('b')])).toBe('a\n\nb')
   })
 })
+
+describe('database design and step mode', () => {
+  it('asks for an ER diagram and DDL for database design', () => {
+    const prompt = buildSystemPrompt('db', { preferredLanguage: 'Java' })
+    expect(prompt).toContain('erDiagram')
+    expect(prompt).toContain('CREATE TABLE')
+    expect(prompt).toContain('## Keys & Indexes')
+  })
+
+  it('adds pacing rules only in step mode', () => {
+    expect(buildSystemPrompt('hld', { preferredLanguage: 'Java', stepMode: true })).toContain('## Clarifying Questions')
+    expect(buildSystemPrompt('hld', { preferredLanguage: 'Java' })).not.toContain('step mode')
+  })
+})
