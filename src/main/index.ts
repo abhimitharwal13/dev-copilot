@@ -8,7 +8,7 @@ import { registerIpcHandlers } from './ipc/handlers'
 import { SolvePipeline } from './pipeline/pipeline'
 import { createProvider } from './providers/registry'
 import { type SecretCodec, SettingsStore } from './settings/SettingsStore'
-import { applyOverlaySettings, createOverlayWindow } from './window'
+import { applyOverlaySettings, createOverlayWindow, showAndFocus } from './window'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -25,6 +25,12 @@ const secretCodec: SecretCodec = {
     throw new Error('Unknown secret encoding')
   }
 }
+
+// Launching the app again (e.g. double-clicking its icon) focuses the running overlay.
+if (!app.requestSingleInstanceLock()) app.quit()
+app.on('second-instance', () => {
+  if (mainWindow) showAndFocus(mainWindow)
+})
 
 void app.whenReady().then(() => {
   const settings = new SettingsStore(join(app.getPath('userData'), 'settings.json'), secretCodec)

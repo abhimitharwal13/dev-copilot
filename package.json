@@ -10,7 +10,10 @@
     "typecheck": "tsc -p tsconfig.node.json && tsc -p tsconfig.web.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "package": "npm run build && electron-builder"
+    "package": "npm run build && electron-builder",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac"
   },
   "author": "Abhi",
   "license": "MIT",
@@ -37,17 +40,48 @@
   "build": {
     "appId": "dev.copilot.desktop",
     "productName": "Dev Copilot",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
     "files": [
       "out/**/*"
     ],
     "mac": {
-      "target": "dmg"
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.developer-tools"
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
     },
     "linux": {
-      "target": "AppImage"
-    }
+      "target": [
+        "AppImage"
+      ],
+      "category": "Development"
+    },
+    "publish": null
   }
 }

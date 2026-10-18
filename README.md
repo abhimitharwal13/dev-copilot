@@ -4,14 +4,24 @@ An Electron scratchpad that turns coding problems and design discussions into st
 
 ![LLD answer with a rendered class diagram](docs/screenshot-lld.png)
 
-## Run it
+## Install (no npm needed)
+
+Ready-built installers are in `releases/` of the project folder:
+
+- **Windows:** run `Dev Copilot Setup 0.1.0.exe`. It installs for your user, adds Desktop and Start menu shortcuts, and opens the app.
+- **Linux:** double-click `Dev Copilot-0.1.0.AppImage` (if your file manager asks, allow it to run as a program, or `chmod +x` it once).
+- **macOS:** a `.dmg` has to be built on a Mac: `npm install && npm run dist:mac`, then open `dist/Dev Copilot-0.1.0-arm64.dmg`. The build is unsigned, so the first time right-click the app and choose **Open**.
+
+Launching the app again while it runs brings the existing overlay to the front.
+
+## Run from source
 
 ```bash
 npm install
 npm run dev        # Electron with hot reload
 npm test           # unit tests (vitest)
 npm run build      # typecheck + production build into out/
-npm run package    # installers via electron-builder
+npm run package    # installers via electron-builder (or dist:win / dist:linux / dist:mac)
 ```
 
 Open **Settings** (the provider pill, top right), pick a provider, paste an API key (or point Ollama at your local server) and press **Test connection**.
