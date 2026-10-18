@@ -25,7 +25,12 @@ const SIGNALS: Record<ProblemType, Signal[]> = {
     { pattern: /\breturn (the|an?|true|false)\b|\bfind the (minimum|maximum|number|kth|longest|shortest)\b/, weight: 2 },
     { pattern: /\btime complexity\b|\bspace complexity\b|\bo\((1|n|log n|n log n|n\^?2|m \* n|n \+ m)\)/, weight: 2 },
     { pattern: /\b(lru|lfu) cache\b|\bmin stack\b|\bget and put\b/, weight: 2 },
-    { pattern: /\bnums\b|\btarget\b|\bindices\b/, weight: 1 }
+    { pattern: /\bnums\b|\btarget\b|\bindices\b/, weight: 1 },
+    // Judge-style statements (HackerRank, Codeforces, ...).
+    { pattern: /\bsample (input|output)\b|\binput format\b|\boutput format\b/, weight: 3 },
+    { pattern: /\bfunction description\b|\bcomplete the \w+ function\b/, weight: 3 },
+    { pattern: /\b(int|long|string|char|float|double|bool(ean)?)\s+\w+\[\w*\]/, weight: 2 },
+    { pattern: /\bprint (yes|no|the|-1)\b/, weight: 1 }
   ],
   lld: [
     { pattern: /\blow[- ]level design\b|\blld\b|\bmachine coding\b|\bobject[- ]oriented design\b|\booad\b/, weight: 4 },

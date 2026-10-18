@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it, vi } from 'vitest'
 import { detectHeuristic, detectProblemType, parseClassification } from '../src/main/pipeline/detector'
 import type { LLMProvider } from '../src/main/providers/LLMProvider'
@@ -41,6 +42,11 @@ describe('detectHeuristic', () => {
     ['Implement an LRU cache class with get and put in O(1)', 'dsa']
   ])('classifies %j as %s', (text, expected) => {
     expect(detectHeuristic(text).type).toBe(expected)
+  })
+
+  it('recognises a HackerRank statement copied from the page', () => {
+    const text = readFileSync(new URL('./fixtures/hackerrank-ransom-note.txt', import.meta.url), 'utf8')
+    expect(detectHeuristic(text)).toMatchObject({ type: 'dsa', certain: true })
   })
 
   it('defaults to DSA with zero confidence when there is no signal', () => {
