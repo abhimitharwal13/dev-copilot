@@ -1,5 +1,5 @@
 import { join } from 'node:path'
-import { BrowserWindow, screen, shell } from 'electron'
+import { app, BrowserWindow, screen, shell } from 'electron'
 import type { OverlaySettings } from '../shared/types'
 
 /**
@@ -73,6 +73,9 @@ export function applyOverlaySettings(win: BrowserWindow, overlay: OverlaySetting
 export function showAndFocus(win: BrowserWindow): void {
   if (win.isMinimized()) win.restore()
   win.show()
+  // macOS only lets a background app take the keyboard when it asks to steal focus; without
+  // this the overlay shows but keys (Esc, typing) still go to the app underneath.
+  if (process.platform === 'darwin') app.focus({ steal: true })
   win.focus()
   win.webContents.focus()
 }
