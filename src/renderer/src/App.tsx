@@ -15,7 +15,7 @@ import { DiagramViewer } from './components/DiagramViewer'
 import { Markdown } from './components/Markdown'
 import { SettingsDialog } from './components/SettingsDialog'
 import { ShortcutHelp } from './components/ShortcutHelp'
-import { conversationMarkdown, slug, solutionCode } from './answer'
+import { conversationMarkdown, sectionTitles, slug, solutionCode } from './answer'
 import { useSolve } from './hooks/useSolve'
 import { IS_MAC, prettyAccelerator, useKeyMap, type KeyMap } from './keyboard'
 
@@ -33,13 +33,24 @@ export function App() {
   const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error' } | null>(null)
   /** Type picked before the first question; `undefined` follows settings. */
   const [typeOverride, setTypeOverride] = useState<ProblemType | undefined>()
+  /** Index of the numbered section currently at the top of the answer. */
+  const [activeSection, setActiveSection] = useState(0)
   const { state, ask, cancel, reset } = useSolve()
+  // The section bar numbers the newest answer that has sections (a short follow-up may have none).
+  let navTurn = -1
+  let sections: string[] = []
+  for (let i = state.turns.length - 1; i >= 0 && navTurn === -1; i--) {
+    const titles = sectionTitles(state.turns[i].answer)
+    if (titles.length >= 2) [navTurn, sections] = [i, titles]
+  }
   const conversation = useRef<HTMLElement>(null)
   const prompt = useRef<HTMLTextAreaElement>(null)
   /** Follow the stream only while the user hasn't scrolled away from the bottom. */
   const stickToBottom = useRef(true)
   /** Context already sent in this conversation; follow-ups attach only what was added since. */
   const sentContext = useRef(new Set<string>())
+  /** The section a number key jumped to, and where that left the scroll; the last sections can't reach the top. */
+  const lastJump = useRef({ section: -1, scrollTop: -1 })
 
   useEffect(() => {
     void api.settings.get().then(setSettings)
@@ -79,6 +90,8 @@ export function App() {
     const fresh = context.filter((c) => !sentContext.current.has(c.id)).map((c) => c.id)
     fresh.forEach((id) => sentContext.current.add(id))
     const first = state.turns.length === 0
+    // Hand the keyboard to the answer, so number keys jump between its sections.
+    conversation.current?.focus()
     void ask(text, { problemType: first ? typeOverride : undefined, contextIds: first ? undefined : fresh })
   }
 
@@ -112,10 +125,39 @@ export function App() {
   const jumpSection = (direction: 1 | -1): void => {
     const el = conversation.current
     if (!el) return
-    const top = el.getBoundingClientRect().top
+    const top = el.getBoundingClientRect().top + navHeight()
     const offsets = [...el.querySelectorAll<HTMLElement>('.turn h2')].map((h) => h.getBoundingClientRect().top - top)
     const target = direction === 1 ? offsets.find((o) => o > 8) : offsets.filter((o) => o < -8).at(-1)
     if (target !== undefined) el.scrollTop += target - 4
+  }
+
+  /** Height of the sticky section bar, which covers the top of the scrolled answer. */
+  const navHeight = (): number => conversation.current?.querySelector<HTMLElement>('.sections')?.offsetHeight ?? 0
+
+  /** Headings of the answer the section bar numbers. */
+  const sectionHeadings = (): HTMLElement[] => {
+    const turn = conversation.current?.querySelectorAll<HTMLElement>('.turn')[navTurn]
+    return [...(turn?.querySelectorAll<HTMLElement>('.markdown h2') ?? [])]
+  }
+
+  /** Scrolls section `n` (1-based) of the numbered answer to the top; 0 goes to its question. */
+  const jumpTo = (n: number): void => {
+    const el = conversation.current
+    const target = n === 0 ? el?.querySelectorAll<HTMLElement>('.turn')[navTurn] : sectionHeadings()[n - 1]
+    if (!el || !target) return
+    stickToBottom.current = false
+    el.scrollTop += target.getBoundingClientRect().top - el.getBoundingClientRect().top - navHeight() - 6
+    lastJump.current = { section: Math.max(0, n - 1), scrollTop: el.scrollTop }
+    setActiveSection(lastJump.current.section)
+  }
+
+  const updateActiveSection = (): void => {
+    const el = conversation.current
+    if (!el) return
+    if (Math.abs(el.scrollTop - lastJump.current.scrollTop) < 2) return setActiveSection(lastJump.current.section)
+    const line = el.getBoundingClientRect().top + navHeight() + 12
+    const passed = sectionHeadings().filter((h) => h.getBoundingClientRect().top <= line).length
+    setActiveSection(Math.max(0, passed - 1))
   }
 
   /** Opens the diagram viewer on the first diagram in view (else the last one). */
@@ -175,6 +217,8 @@ export function App() {
   const keyMap: KeyMap = {
     Escape: () => {
       if (state.busy) cancel()
+      // Leaving the prompt lets number keys jump between sections; a second Esc hides.
+      else if (document.activeElement === prompt.current && state.turns.length > 0) conversation.current?.focus()
       else void api.ui.hideWindow()
     },
     'CommandOrControl+L': () => prompt.current?.focus(),
@@ -213,6 +257,8 @@ export function App() {
     'Alt+Up': () => scroll('up'),
     'Alt+Down': () => scroll('down')
   }
+  // Bare digits jump to numbered sections; they are ignored while the prompt box has focus.
+  for (let n = 0; n <= Math.min(9, sections.length); n++) keyMap[String(n)] = () => jumpTo(n)
   TYPE_ORDER.forEach((t, i) => (keyMap[`CommandOrControl+${i + 1}`] = () => switchType(t)))
   const answerType = state.detection?.type ?? typeOverride ?? 'dsa'
   if (isFollowUp && !state.busy) {
@@ -282,8 +328,24 @@ export function App() {
           onScroll={(e) => {
             const el = e.currentTarget
             stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40
+            if (sections.length > 0) updateActiveSection()
           }}
         >
+          {sections.length > 0 && (
+            <nav className="sections" aria-label="Sections">
+              {sections.slice(0, 9).map((title, i) => (
+                <button
+                  key={`${i}-${title}`}
+                  type="button"
+                  tabIndex={-1}
+                  className={i === activeSection ? 'active' : ''}
+                  onClick={() => jumpTo(i + 1)}
+                >
+                  <kbd>{i + 1}</kbd> {title}
+                </button>
+              ))}
+            </nav>
+          )}
           {needsKey && (
             <div className="banner">
               Add an API key for {active?.label}: press <kbd>{MOD} + ,</kbd> to open settings.

@@ -1,6 +1,7 @@
 import { memo, useState, type ReactNode } from 'react'
 import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { headingTitle } from '../answer'
 import { Mermaid } from './Mermaid'
 
 function CodeBlock({ language, code }: { language: string; code: string }) {
@@ -43,6 +44,8 @@ export const Markdown = memo(function Markdown({ text, final }: { text: string; 
       if (language === 'mermaid') return <Mermaid code={code} final={final} />
       return <CodeBlock language={language ?? ''} code={code} />
     },
+    // Sections are numbered by CSS, so drop any number the model wrote itself.
+    h2: ({ children }) => <h2>{typeof children === 'string' ? headingTitle(children) : children}</h2>,
     a: ({ href, children }) => (
       <a href={href} target="_blank" rel="noreferrer">
         {children}

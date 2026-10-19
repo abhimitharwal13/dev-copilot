@@ -74,7 +74,8 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | In the overlay | Action |
 | --- | --- |
 | `Enter` / `Shift + Enter` | Send / new line |
-| `Esc` | Stop the answer, close a dialog, or hide the overlay |
+| `Esc` | Stop the answer, leave the prompt box, close a dialog, or hide the overlay |
+| `1…9` / `0` | Jump to that numbered section of the answer / back to the question. Sending a prompt moves focus to the answer so these work right away; `Ctrl/⌘ + L` goes back to the prompt box, where digits type normally |
 | `Alt + 1…5` | Quick follow-ups for the current type (DSA: optimise space, edge cases, tests…; LLD: thread safety, new feature, patterns…; System Design: scale 10x, deep dive, schema & sharding, sequence diagram, interviewer follow-ups; Database: sample data, query tuning, NoSQL version…) |
 | `Ctrl/⌘ + 1…4` | Switch DSA / LLD / System Design / Database (re-runs the answer) |
 | `Ctrl/⌘ + N` | New problem |
@@ -91,6 +92,10 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | `Ctrl/⌘ + /` or `F1` | Shortcut list |
 
 Code is written in Java by default; change it in Settings.
+
+Answers are split into numbered sections, listed in a bar pinned to the top of the answer. System Design answers are built bottom-up: requirements and estimates, then **Phase 1** (the simplest design that works, with a small diagram), **Phase 2** (what breaks and the scaled design, new parts highlighted) and **Phase 3** (caching, queues and replication), followed by the data model, deep dives and trade-offs. Wide diagrams no longer shrink below 80% of their natural size; they scroll sideways instead, and `Ctrl/⌘ + D` opens any diagram full-size.
+
+![Numbered sections and a Phase 2 diagram](docs/system-design-sections.png)
 
 ### Screen capture
 

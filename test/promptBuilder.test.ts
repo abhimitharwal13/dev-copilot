@@ -32,6 +32,13 @@ describe('buildSystemPrompt', () => {
     expect(buildSystemPrompt('hld', { preferredLanguage: 'Python' })).toContain('flowchart')
     expect(buildSystemPrompt('dsa', { preferredLanguage: 'Python' })).not.toContain('mermaid')
   })
+
+  it('builds system designs bottom-up in phases, each with its own diagram', () => {
+    const prompt = buildSystemPrompt('hld', { preferredLanguage: 'Java' })
+    const phases = ['## Phase 1', '## Phase 2', '## Phase 3'].map((h) => prompt.indexOf(h))
+    expect(phases.every((p, i) => p > 0 && (i === 0 || p > phases[i - 1]))).toBe(true)
+    expect(prompt.match(/flowchart (LR|TB)/g)).toHaveLength(3)
+  })
 })
 
 describe('buildUserMessage', () => {

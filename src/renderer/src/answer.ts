@@ -35,3 +35,19 @@ export function conversationMarkdown(turns: { prompt: string; answer: string }[]
 export function slug(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'answer'
 }
+
+/** Strips a number the model put in front of a heading ("2. Estimates" → "Estimates"); the app numbers them. */
+export function headingTitle(text: string): string {
+  return text.replace(/^\s*\d+\s*[.):-]\s+/, '').trim()
+}
+
+/** The `##` section titles of an answer, in order, ignoring lines inside code fences. */
+export function sectionTitles(markdown: string): string[] {
+  const titles: string[] = []
+  let fenced = false
+  for (const line of markdown.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) fenced = !fenced
+    else if (!fenced && /^## /.test(line)) titles.push(headingTitle(line.slice(3)))
+  }
+  return titles
+}

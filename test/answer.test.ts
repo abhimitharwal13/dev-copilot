@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { conversationMarkdown, slug, solutionCode } from '../src/renderer/src/answer'
+import { conversationMarkdown, sectionTitles, slug, solutionCode } from '../src/renderer/src/answer'
 
 const LLD = `## Class Diagram
 \`\`\`mermaid
@@ -47,5 +47,12 @@ describe('export helpers', () => {
 
   it('makes a file-safe slug', () => {
     expect(slug('Design BookMyShow!')).toBe('design-bookmyshow')
+  })
+})
+
+describe('sectionTitles', () => {
+  it('lists ## headings outside code fences, without the model\'s own numbers', () => {
+    const md = '## 1. Requirements\ntext\n```sql\n## not a heading\n```\n### sub\n## Phase 1: Simplest Design\n## 3) Core API'
+    expect(sectionTitles(md)).toEqual(['Requirements', 'Phase 1: Simplest Design', 'Core API'])
   })
 })

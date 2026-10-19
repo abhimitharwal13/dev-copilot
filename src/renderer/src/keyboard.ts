@@ -72,6 +72,10 @@ export function prettyAccelerator(accelerator: string): string {
     .join(' + ')
 }
 
+function isTextField(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
+}
+
 export type KeyMap = Record<string, (e: KeyboardEvent) => void>
 
 /**
@@ -86,6 +90,8 @@ export function useKeyMap(map: KeyMap): void {
       const accelerator = eventAccelerator(e)
       const handler = accelerator ? ref.current[accelerator] : undefined
       if (!handler) return
+      // Bare printable keys (section numbers) never fire while typing in a text field.
+      if (accelerator?.length === 1 && isTextField(e.target)) return
       e.preventDefault()
       e.stopPropagation()
       handler(e)
