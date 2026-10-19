@@ -24,7 +24,9 @@ npm run build      # typecheck + production build into out/
 npm run package    # installers via electron-builder (or dist:win / dist:linux / dist:mac)
 ```
 
-Open **Settings** (the provider pill, top right), pick a provider, paste an API key (or point Ollama at your local server) and press **Test connection**.
+By default the app answers through **Claude (your subscription)**: it runs your local [Claude Code](https://claude.ai/code) CLI with your Claude account, so no API key is needed. Install it once with `curl -fsSL https://claude.ai/install.sh | bash`, run `claude` in Terminal and sign in. Usage counts against your Claude plan's limits. The app never sees your credentials.
+
+To use an API instead, open **Settings** (the provider pill, top right), pick a provider, paste an API key (or point Ollama at your local server) and press **Test connection**.
 
 ## What iteration 1 includes
 
@@ -35,6 +37,7 @@ Open **Settings** (the provider pill, top right), pick a provider, paste an API 
 | `LLMProvider` interface | `src/main/providers/LLMProvider.ts` |
 | Claude via the official Anthropic SDK | `src/main/providers/anthropic.ts` |
 | OpenAI, Groq and Ollama via one OpenAI-compatible client | `src/main/providers/openaiCompatible.ts` |
+| Claude through the local Claude Code CLI and your subscription (no key) | `src/main/providers/claudeCode.ts` |
 | Provider registry (add a vendor here) | `src/main/providers/registry.ts` |
 | Problem-type detection: keyword heuristics, model fallback when unsure | `src/main/pipeline/detector.ts` |
 | DSA / LLD / System Design / Database Design output templates | `src/main/pipeline/templates/` |
@@ -49,7 +52,7 @@ Open **Settings** (the provider pill, top right), pick a provider, paste an API 
 
 ### The overlay
 
-The window is a frameless, transparent overlay that stays above other windows, so you can read the code behind it. Background opacity is adjustable (`Ctrl/⌘ + [` and `]`, or in Settings) while text stays fully opaque. On macOS the background also gets a native blur. With **Always on top** on, the overlay also appears over full-screen apps (for example a browser in macOS full screen), on whichever Space you are in.
+The window is a frameless, transparent overlay that stays above other windows, so you can read the code behind it. Background opacity is adjustable (`Ctrl/⌘ + [` and `]`, or in Settings) while text stays fully opaque. On macOS the background also gets a native blur.
 
 ![Translucent overlay over an editor](docs/overlay-translucent.png)
 

@@ -6,7 +6,7 @@ export function defaultSettings(): Settings {
     PROVIDER_IDS.map((id) => [id, { model: getProviderInfo(id).defaultModel }])
   ) as Settings['providers']
   return {
-    activeProvider: 'anthropic' satisfies ProviderId,
+    activeProvider: 'claudecode' satisfies ProviderId,
     providers,
     problemTypeMode: 'auto',
     llmDetectionFallback: true,

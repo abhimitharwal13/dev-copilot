@@ -129,10 +129,24 @@ export function SettingsDialog({ settings, providers, onSave, onClose }: Props) 
             </label>
           )}
 
-          <label>
-            Base URL
-            <input value={baseUrl} placeholder={info?.defaultBaseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
-          </label>
+          {activeProvider === 'claudecode' ? (
+            <>
+              <p className="muted small">
+                Uses your Claude subscription through Claude Code, so no API key is needed. Install it once with{' '}
+                <code>curl -fsSL https://claude.ai/install.sh | bash</code>, then run <code>claude</code> in Terminal and
+                sign in.
+              </p>
+              <label>
+                Claude Code path (optional)
+                <input value={baseUrl} placeholder="Found automatically" onChange={(e) => setBaseUrl(e.target.value)} />
+              </label>
+            </>
+          ) : (
+            <label>
+              Base URL
+              <input value={baseUrl} placeholder={info?.defaultBaseUrl} onChange={(e) => setBaseUrl(e.target.value)} />
+            </label>
+          )}
 
           <div className="row">
             <button type="button" className="secondary" disabled={test === 'running'} onClick={() => void runTest()}>

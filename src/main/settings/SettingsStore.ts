@@ -17,7 +17,7 @@ export interface SecretCodec {
 }
 
 /** Bumped when a default changes in a way existing files should pick up; see `migrate`. */
-const SCHEMA_VERSION = 2
+const SCHEMA_VERSION = 3
 
 /** On-disk shape: identical to `Settings` except keys are encrypted. */
 interface StoredSettings extends Omit<Settings, 'providers'> {
@@ -131,8 +131,13 @@ export class SettingsStore {
 /** Upgrades settings written by older versions. */
 function migrate(settings: Settings, fromVersion: number): Settings {
   // v1 wrote the old Python default into every file; Java is the default from v2.
-  if (fromVersion < 2 && settings.preferredLanguage === 'Python') return { ...settings, preferredLanguage: 'Java' }
-  return settings
+  let next = settings
+  if (fromVersion < 2 && next.preferredLanguage === 'Python') next = { ...next, preferredLanguage: 'Java' }
+  // v3 adds the Claude subscription provider; move keyless Anthropic setups onto it.
+  if (fromVersion < 3 && next.activeProvider === 'anthropic' && !next.providers.anthropic.apiKey) {
+    next = { ...next, activeProvider: 'claudecode' }
+  }
+  return next
 }
 
 function clamp(value: number, min: number, max: number): number {

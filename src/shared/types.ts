@@ -15,7 +15,8 @@ export const PROBLEM_TYPE_LABELS: Record<ProblemType, string> = {
 /** The message the "next section" key (Alt+N) sends in interview step mode. */
 export const NEXT_SECTION_PROMPT = 'Next section.'
 
-export type ProviderId = 'anthropic' | 'openai' | 'groq' | 'ollama'
+/** `claudecode` answers through the local Claude Code CLI and the user's Claude subscription. */
+export type ProviderId = 'claudecode' | 'anthropic' | 'openai' | 'groq' | 'ollama'
 
 /** One item in the context buffer. New input streams add a new `kind`. */
 export type ContextItem =

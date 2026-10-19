@@ -75,6 +75,6 @@ describe('toOpenAIMessages', () => {
 
 describe('registry', () => {
   it('exposes all four providers', () => {
-    expect(listProviders().map((p) => p.id)).toEqual(['anthropic', 'openai', 'groq', 'ollama'])
+    expect(listProviders().map((p) => p.id)).toEqual(['claudecode', 'anthropic', 'openai', 'groq', 'ollama'])
   })
 })

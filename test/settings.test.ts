@@ -16,11 +16,23 @@ describe('SettingsStore', () => {
   it('starts from defaults and persists updates', () => {
     const path = file()
     const store = new SettingsStore(path, codec)
-    expect(store.get().activeProvider).toBe('anthropic')
+    expect(store.get().activeProvider).toBe('claudecode')
     store.update({ activeProvider: 'ollama', providers: { ollama: { model: 'llama3' } } })
     const reloaded = new SettingsStore(path, codec)
     expect(reloaded.get().activeProvider).toBe('ollama')
     expect(reloaded.get().providers.ollama.model).toBe('llama3')
+  })
+
+  it('moves keyless Anthropic setups from older versions onto the Claude subscription provider', () => {
+    const keyless = file()
+    writeFileSync(keyless, JSON.stringify({ schemaVersion: 2, activeProvider: 'anthropic', providers: {} }))
+    expect(new SettingsStore(keyless, codec).get().activeProvider).toBe('claudecode')
+    const withKey = file()
+    writeFileSync(
+      withKey,
+      JSON.stringify({ schemaVersion: 2, activeProvider: 'anthropic', providers: { anthropic: { model: 'm', encryptedApiKey: 'x:k' } } })
+    )
+    expect(new SettingsStore(withKey, codec).get().activeProvider).toBe('anthropic')
   })
 
   it('encrypts API keys on disk and hides them from the public view', () => {

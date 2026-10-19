@@ -1,5 +1,6 @@
 import type { ProviderConfig, ProviderId, ProviderInfo } from '../../shared/types'
 import { ANTHROPIC_INFO, AnthropicProvider } from './anthropic'
+import { CLAUDE_CODE_INFO, ClaudeCodeProvider } from './claudeCode'
 import type { LLMProvider } from './LLMProvider'
 import { OpenAICompatibleProvider } from './openaiCompatible'
 
@@ -45,6 +46,7 @@ interface ProviderEntry {
  * Nothing else in the app knows which vendors exist.
  */
 const REGISTRY: Record<ProviderId, ProviderEntry> = {
+  claudecode: { info: CLAUDE_CODE_INFO, create: (c) => new ClaudeCodeProvider(c) },
   anthropic: { info: ANTHROPIC_INFO, create: (c) => new AnthropicProvider(c) },
   openai: {
     info: OPENAI_INFO,
