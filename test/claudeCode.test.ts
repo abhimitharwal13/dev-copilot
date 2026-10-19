@@ -90,13 +90,13 @@ describe('Claude Code helpers', () => {
     ])
     const texts = JSON.parse(line).message.content.map((b: { type: string; text?: string }) => b.text ?? b.type)
     expect(texts).toEqual([
-      '<Earlier question>',
+      '[Earlier question]',
       'image',
       'Solve it',
-      '</Earlier question>',
-      '<Your earlier answer>',
+      '[End of earlier question]',
+      '[Your earlier answer]',
       'Answer 1',
-      '</Your earlier answer>',
+      '[End of your earlier answer]',
       'Now the new message:',
       'Optimise space'
     ])

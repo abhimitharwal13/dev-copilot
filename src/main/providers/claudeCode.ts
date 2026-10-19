@@ -72,9 +72,9 @@ export function toStdinMessage(messages: ChatMessage[]): string {
   const last = messages.length - 1
   messages.forEach((m, i) => {
     const label = i === last ? null : m.role === 'user' ? 'Earlier question' : 'Your earlier answer'
-    if (label) content.push({ type: 'text', text: `<${label}>` })
+    if (label) content.push({ type: 'text', text: `[${label}]` })
     for (const part of m.content) content.push(toBlock(part))
-    if (label) content.push({ type: 'text', text: `</${label}>` })
+    if (label) content.push({ type: 'text', text: `[End of ${label.toLowerCase()}]` })
   })
   if (last > 0) content.splice(content.length - messages[last].content.length, 0, { type: 'text', text: 'Now the new message:' })
   return `${JSON.stringify({ type: 'user', message: { role: 'user', content }, parent_tool_use_id: null })}\n`
