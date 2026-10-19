@@ -61,7 +61,7 @@ export class SettingsStore {
       shortcuts: { ...this.settings.shortcuts, ...stripUndefined(patch.shortcuts ?? {}) },
       overlay: { ...this.settings.overlay, ...stripUndefined(patch.overlay ?? {}) }
     }
-    next.overlay.backgroundOpacity = clamp(next.overlay.backgroundOpacity, 0.2, 1)
+    next.overlay.backgroundOpacity = clamp(next.overlay.backgroundOpacity, 0.1, 1)
     for (const [id, change] of Object.entries(patch.providers ?? {}) as [ProviderId, Partial<ProviderConfig>][]) {
       if (!PROVIDER_IDS.includes(id) || !change) continue
       const merged = { ...next.providers[id], ...stripUndefined(change) }

@@ -81,7 +81,7 @@ describe('SettingsStore defaults and migration', () => {
   it('defaults to Java and a translucent always-on-top overlay', () => {
     const s = new SettingsStore(file(), codec).get()
     expect(s.preferredLanguage).toBe('Java')
-    expect(s.overlay).toEqual({ backgroundOpacity: 0.72, alwaysOnTop: true })
+    expect(s.overlay).toEqual({ backgroundOpacity: 0.55, alwaysOnTop: true })
     expect(s.shortcuts.customPrompt).toBe('CommandOrControl+Shift+K')
   })
 
@@ -98,7 +98,7 @@ describe('SettingsStore defaults and migration', () => {
 
   it('clamps background opacity', () => {
     const store = new SettingsStore(file(), codec)
-    expect(store.update({ overlay: { backgroundOpacity: 0 } }).overlay.backgroundOpacity).toBe(0.2)
+    expect(store.update({ overlay: { backgroundOpacity: 0 } }).overlay.backgroundOpacity).toBe(0.1)
     expect(store.update({ overlay: { backgroundOpacity: 3 } }).overlay).toEqual({ backgroundOpacity: 1, alwaysOnTop: true })
   })
 })
