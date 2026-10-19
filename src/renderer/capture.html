@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    />
+    <title>Select a region</title>
+  </head>
+  <body>
+    <img id="shot" alt="" draggable="false" />
+    <div id="selection"><span id="size"></span></div>
+    <div id="help"></div>
+    <script type="module" src="/src/capture/main.ts"></script>
+  </body>
+</html>

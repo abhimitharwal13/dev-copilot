@@ -1,8 +1,8 @@
 import type { ContextBuffer } from './ContextBuffer'
 
 /**
- * An input stream that feeds the context buffer: clipboard today, screen
- * region capture and Whisper transcription in later iterations.
+ * An input stream that feeds the context buffer: clipboard and screen
+ * region capture today, Whisper transcription in a later iteration.
  * Sources are started once at app launch and stopped on quit.
  */
 export interface InputSource {
@@ -13,10 +13,19 @@ export interface InputSource {
   stop(): Promise<void> | void
 }
 
-/** Captures a region of the screen into the buffer. Implemented in iteration 2. */
+/** A screenshot as base64 (no `data:` prefix). Large captures fall back to JPEG. */
+export interface CapturedImage {
+  data: string
+  mediaType: 'image/png' | 'image/jpeg'
+}
+
+/** Captures a region of the screen into the buffer (see ScreenCapture.ts). */
 export interface ScreenCaptureService {
-  /** Lets the user pick a region and resolves with a PNG, or null if cancelled. */
-  captureRegion(): Promise<{ data: string; mediaType: 'image/png' } | null>
+  /**
+   * Lets the user pick a region and resolves with the image, or null if
+   * cancelled. Rejects with a user-facing message when the OS denies access.
+   */
+  captureRegion(): Promise<CapturedImage | null>
 }
 
 /**

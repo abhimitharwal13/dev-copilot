@@ -71,6 +71,7 @@ kbd { font-family: var(--mono); font-size: 12px; padding: 1px 5px; border: 1px s
   position: fixed; left: 50%; bottom: 120px; transform: translateX(-50%);
   background: rgb(30 34 43 / 95%); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 13px;
 }
+.toast--error { border-color: var(--err); color: var(--err); border-radius: var(--radius); max-width: min(560px, 90%); text-align: center; }
 .keys { border-collapse: collapse; width: 100%; margin-bottom: 12px; }
 .keys td { padding: 4px 8px 4px 0; vertical-align: top; }
 .keys td:first-child { white-space: nowrap; width: 1%; }

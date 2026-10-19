@@ -23,7 +23,7 @@ interface Props {
 
 const LANGUAGES = ['Java', 'Python', 'C++', 'JavaScript', 'TypeScript', 'Go', 'Kotlin', 'C#', 'Rust']
 /** Not wired up yet, so not editable. */
-const HIDDEN_SHORTCUTS: (keyof ShortcutSettings)[] = ['captureScreen', 'toggleRecording']
+const HIDDEN_SHORTCUTS: (keyof ShortcutSettings)[] = ['toggleRecording']
 
 /** Fully keyboard-operable: Tab between fields, Ctrl/⌘+Enter saves, Esc cancels. */
 export function SettingsDialog({ settings, providers, onSave, onClose }: Props) {

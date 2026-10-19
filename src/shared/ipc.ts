@@ -9,6 +9,7 @@ import type {
   SolveRequest,
   UiCommand
 } from './types'
+import type { Rect } from './region'
 
 /** Every IPC channel name lives here so main and preload cannot drift apart. */
 export const IPC = {
@@ -29,7 +30,9 @@ export const IPC = {
   uiCommand: 'ui:command',
   windowHide: 'window:hide',
   fileSave: 'file:save',
-  shortcutsFailed: 'shortcuts:failed'
+  shortcutsFailed: 'shortcuts:failed',
+  captureImage: 'capture:image',
+  captureDone: 'capture:done'
 } as const
 
 /** The API the preload script exposes on `window.devCopilot`. */
@@ -65,5 +68,12 @@ export interface DevCopilotApi {
     saveFile(defaultName: string, content: string): Promise<string | null>
     /** Global shortcuts that could not be registered, usually because another app owns them. */
     failedShortcuts(): Promise<string[]>
+  }
+  /** Used only by the screen region picker window. */
+  capture: {
+    /** The frozen screenshot to select from, as a data URL. */
+    image(): Promise<string | null>
+    /** Reports the selection in screen points, or null to cancel. */
+    done(rect: Rect | null): void
   }
 }

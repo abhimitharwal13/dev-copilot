@@ -30,7 +30,7 @@ export function App() {
   const [context, setContext] = useState<ContextItem[]>([])
   const [dialog, setDialog] = useState<'settings' | 'help' | 'diagram' | null>(null)
   const [diagrams, setDiagrams] = useState<{ svgs: string[]; start: number }>({ svgs: [], start: 0 })
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; tone: 'info' | 'error' } | null>(null)
   /** Type picked before the first question; `undefined` follows settings. */
   const [typeOverride, setTypeOverride] = useState<ProblemType | undefined>()
   const { state, ask, cancel, reset } = useSolve()
@@ -38,6 +38,8 @@ export function App() {
   const prompt = useRef<HTMLTextAreaElement>(null)
   /** Follow the stream only while the user hasn't scrolled away from the bottom. */
   const stickToBottom = useRef(true)
+  /** Context already sent in this conversation; follow-ups attach only what was added since. */
+  const sentContext = useRef(new Set<string>())
 
   useEffect(() => {
     void api.settings.get().then(setSettings)
@@ -58,9 +60,10 @@ export function App() {
     if (el && turn) el.scrollTop = turn.offsetTop - el.offsetTop
   }, [state.turns.length])
 
-  const flash = (message: string): void => {
-    setToast(message)
-    setTimeout(() => setToast((t) => (t === message ? null : t)), 1600)
+  const flash = (message: string, tone: 'info' | 'error' = 'info', ms = 1600): void => {
+    const next = { message, tone }
+    setToast(next)
+    setTimeout(() => setToast((t) => (t === next ? null : t)), ms)
   }
 
   const saveSettings = useCallback(async (patch: SettingsPatch) => {
@@ -73,11 +76,15 @@ export function App() {
       return
     }
     stickToBottom.current = false
-    void ask(text, { problemType: state.turns.length === 0 ? typeOverride : undefined })
+    const fresh = context.filter((c) => !sentContext.current.has(c.id)).map((c) => c.id)
+    fresh.forEach((id) => sentContext.current.add(id))
+    const first = state.turns.length === 0
+    void ask(text, { problemType: first ? typeOverride : undefined, contextIds: first ? undefined : fresh })
   }
 
   const newProblem = (): void => {
     reset()
+    sentContext.current.clear()
     setTypeOverride(undefined)
     prompt.current?.focus()
   }
@@ -151,6 +158,8 @@ export function App() {
       prompt.current?.select()
     } else if (command.type === 'solveContext') {
       if (!state.busy) submit('')
+    } else if (command.type === 'notice') {
+      flash(command.message, command.tone, command.tone === 'error' ? 12000 : 3500)
     } else {
       scroll(command.direction)
     }
@@ -250,7 +259,11 @@ export function App() {
       </header>
 
       <div className="body">
-        <ContextPanel items={context} captureShortcut={settings.shortcuts.captureClipboard} />
+        <ContextPanel
+          items={context}
+          clipboardShortcut={settings.shortcuts.captureClipboard}
+          screenShortcut={settings.shortcuts.captureScreen}
+        />
 
         <main
           className="conversation"
@@ -281,8 +294,9 @@ export function App() {
               <h1>Paste a problem. Get a structured breakdown.</h1>
               <p>
                 Press <kbd>{prettyAccelerator(settings.shortcuts.customPrompt)}</kbd> from any app to type a prompt
-                here, or <kbd>{prettyAccelerator(settings.shortcuts.captureClipboard)}</kbd> to capture the clipboard
-                and <kbd>{prettyAccelerator(settings.shortcuts.solveContext)}</kbd> to solve it.
+                here, <kbd>{prettyAccelerator(settings.shortcuts.captureScreen)}</kbd> to screenshot a region of the
+                screen, or <kbd>{prettyAccelerator(settings.shortcuts.captureClipboard)}</kbd> to capture the clipboard,
+                then <kbd>{prettyAccelerator(settings.shortcuts.solveContext)}</kbd> to solve it.
               </p>
             </div>
           ) : (
@@ -315,7 +329,11 @@ export function App() {
         />
       </footer>
 
-      {toast && <div className="toast">{toast}</div>}
+      {toast && (
+        <div className={`toast toast--${toast.tone}`} role={toast.tone === 'error' ? 'alert' : 'status'}>
+          {toast.message}
+        </div>
+      )}
 
       {dialog === 'settings' && (
         <SettingsDialog

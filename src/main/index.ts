@@ -3,6 +3,7 @@ import { app, BrowserWindow, globalShortcut, ipcMain, safeStorage } from 'electr
 import { IPC } from '../shared/ipc'
 import type { UiCommand } from '../shared/types'
 import { ContextBuffer } from './inputs/ContextBuffer'
+import { ElectronScreenCapture } from './inputs/ScreenCapture'
 import { registerShortcuts } from './inputs/shortcuts'
 import { registerIpcHandlers } from './ipc/handlers'
 import { SolvePipeline } from './pipeline/pipeline'
@@ -59,6 +60,7 @@ void app.whenReady().then(() => {
   const shortcutDeps = {
     buffer,
     getWindow: () => mainWindow,
+    screenCapture: new ElectronScreenCapture(() => mainWindow),
     sendCommand: (command: UiCommand) => mainWindow?.webContents.send(IPC.uiCommand, command)
   }
   const bindShortcuts = (): void => {

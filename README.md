@@ -40,7 +40,8 @@ Open **Settings** (the provider pill, top right), pick a provider, paste an API 
 | DSA / LLD / System Design / Database Design output templates | `src/main/pipeline/templates/` |
 | Prompt assembly and the solve pipeline with follow-up history | `src/main/pipeline/promptBuilder.ts`, `pipeline.ts` |
 | Settings with API keys encrypted by the OS keychain (`safeStorage`) | `src/main/settings/` |
-| Context buffer: typed text, pasted/dropped images and files, clipboard | `src/main/inputs/ContextBuffer.ts` |
+| Context buffer: typed text, pasted/dropped images and files, clipboard, screen captures | `src/main/inputs/ContextBuffer.ts` |
+| Screen region capture and the keyboard region picker | `src/main/inputs/ScreenCapture.ts`, `src/renderer/src/capture/` |
 | Global shortcuts | `src/main/inputs/shortcuts.ts` |
 | Translucent overlay window | `src/main/window.ts` |
 | In-window key map and shortcut recorder | `src/renderer/src/keyboard.ts`, `components/ShortcutInput.tsx` |
@@ -59,6 +60,7 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | Global shortcut | Action |
 | --- | --- |
 | `Ctrl/⌘ + Shift + K` | Show the overlay with the prompt focused, to type a custom message |
+| `Ctrl/⌘ + Shift + S` | Screenshot a region of the screen into the context buffer (see below) |
 | `Ctrl/⌘ + Shift + V` | Add the clipboard (image or text) to the context buffer |
 | `Ctrl/⌘ + Shift + Enter` | Solve the captured context without typing |
 | `Ctrl/⌘ + Shift + Space` | Show or hide the overlay |
@@ -84,6 +86,25 @@ Everything works without the mouse. Global shortcuts work while another app is f
 
 Code is written in Java by default; change it in Settings.
 
+### Screen region capture
+
+For pages where copying is blocked, `Ctrl/⌘ + Shift + S` freezes the screen under the mouse pointer and opens a region picker. The overlay steps aside while the screenshot is taken.
+
+| In the picker | Action |
+| --- | --- |
+| Arrow keys | Move the highlighted corner (starts at top-left) |
+| `Tab` | Switch to the other corner |
+| `Shift` / `Alt` + arrows | Bigger / finer steps |
+| `Ctrl/⌘` + arrows | Move the whole box |
+| `F` | Select the full screen again (the default) |
+| `Enter` | Capture; `Esc` cancels |
+
+Dragging with the mouse also works. The screenshot joins the context buffer and the overlay comes forward with the prompt focused, so `Enter` solves it. Take several shots for a long statement (scroll, capture again); they are sent in order as one problem. A shot taken after an answer is attached to the next follow-up only. Images go to every provider; pick a vision model for OpenAI, Groq or Ollama.
+
+On macOS the first capture asks for **Screen Recording** permission. If it is off, the app opens System Settings > Privacy & Security > Screen & System Audio Recording; turn Dev Copilot on, then quit and reopen it. Because local builds are not signed with a developer certificate, macOS may ask again after you install a new build.
+
+![Region picker](docs/screen-capture-picker.png)
+
 ## Architecture
 
 ```mermaid
@@ -97,6 +118,7 @@ flowchart LR
     Handlers --> Buffer[ContextBuffer]
     Handlers --> Settings[SettingsStore]
     Shortcuts[Global shortcuts] --> Buffer
+    Shortcuts --> Capture[ScreenCapture + region picker] --> Buffer
     Pipeline --> Detector[Problem detector]
     Pipeline --> Templates[DSA / LLD / HLD / DB templates]
     Pipeline --> Registry[Provider registry]
@@ -109,7 +131,6 @@ A request flows: context buffer + prompt → detection (heuristic, then the mode
 
 ## Extension points for later iterations
 
-- **Screen region capture**: implement `ScreenCaptureService` (`src/main/inputs/InputSource.ts`) and pass it to `registerShortcuts`; the `captureScreen` shortcut is already in settings and is skipped until a service exists.
 - **Whisper transcription**: implement `TranscriptionService` against a local whisper.cpp server and pass a `toggleRecording` handler; transcripts go into the buffer with source `audio`, which prompts already label as a voice transcript.
 - **New provider**: add an id to `ProviderId` and one entry to the registry.
 - **New problem type**: add a template and signals in `detector.ts`.

@@ -13,11 +13,12 @@ const SOURCE_LABEL: Record<ContextItem['source'], string> = {
 
 interface Props {
   items: ContextItem[]
-  captureShortcut: string
+  clipboardShortcut: string
+  screenShortcut: string
 }
 
-/** The context buffer: everything attached to the next first question. */
-export function ContextPanel({ items, captureShortcut }: Props) {
+/** The context buffer: everything attached to the first question, and anything added since to the next follow-up. */
+export function ContextPanel({ items, clipboardShortcut, screenShortcut }: Props) {
   return (
     <aside className="context">
       <header className="context__header">
@@ -30,8 +31,8 @@ export function ContextPanel({ items, captureShortcut }: Props) {
       </header>
       {items.length === 0 ? (
         <p className="context__empty">
-          Paste screenshots and code into the prompt, or press <kbd>{prettyAccelerator(captureShortcut)}</kbd> in any
-          app to capture the clipboard.
+          Press <kbd>{prettyAccelerator(screenShortcut)}</kbd> in any app to screenshot a region of the screen, or{' '}
+          <kbd>{prettyAccelerator(clipboardShortcut)}</kbd> to capture the clipboard. You can also paste into the prompt.
         </p>
       ) : (
         <ul className="context__list">

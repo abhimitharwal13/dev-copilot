@@ -30,7 +30,7 @@ export type ContextItem =
       createdAt: number
     }
 
-/** Where a context item came from. `screen` and `audio` arrive in later iterations. */
+/** Where a context item came from. `audio` arrives in a later iteration. */
 export type ContextSource = 'typed' | 'clipboard' | 'paste' | 'file' | 'screen' | 'audio'
 
 export type Role = 'user' | 'assistant'
@@ -85,7 +85,7 @@ export interface ShortcutSettings {
   solveContext: string
   /** Adds the clipboard (text or image) to the context buffer. */
   captureClipboard: string
-  /** Screen region capture; wired up in a later iteration. */
+  /** Freezes the screen and lets you select a region to add as an image. */
   captureScreen: string
   /** Push-to-talk transcription; wired up in a later iteration. */
   toggleRecording: string
@@ -101,7 +101,7 @@ export const SHORTCUT_LABELS: Record<keyof ShortcutSettings, string> = {
   customPrompt: 'Type a custom prompt',
   solveContext: 'Solve the captured context',
   captureClipboard: 'Capture clipboard',
-  captureScreen: 'Capture screen region (coming soon)',
+  captureScreen: 'Capture a screen region (screenshot)',
   toggleRecording: 'Voice input (coming soon)',
   toggleWindow: 'Show / hide overlay',
   scrollUp: 'Scroll answer up',
@@ -114,6 +114,8 @@ export type UiCommand =
   | { type: 'focusPrompt' }
   | { type: 'solveContext' }
   | { type: 'scroll'; direction: 'up' | 'down' }
+  /** A message to show briefly, e.g. after a screen capture or when permission is missing. */
+  | { type: 'notice'; message: string; tone: 'info' | 'error' }
 
 /** Settings as the renderer sees them: secrets replaced by flags. */
 export interface PublicProviderConfig extends Omit<ProviderConfig, 'apiKey'> {

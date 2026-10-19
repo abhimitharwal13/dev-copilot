@@ -50,6 +50,14 @@ describe('buildUserMessage', () => {
     expect(msg.content[0]).toEqual({ type: 'image', data: 'AAAA', mediaType: 'image/png' })
     expect(msg.content[1]).toMatchObject({ type: 'text', text: expect.stringContaining('attached context') })
   })
+
+  it('tells the model that several screenshots are one problem in order', () => {
+    const shot = (id: string): ContextItem => ({ id, kind: 'image', source: 'screen', data: id, mediaType: 'image/png', createdAt: 0 })
+    const msg = buildUserMessage('solve', [shot('a'), shot('b')])
+    expect(msg.content.map((p) => p.type)).toEqual(['image', 'image', 'text', 'text'])
+    expect(msg.content[2]).toMatchObject({ type: 'text', text: expect.stringContaining('2 images above are screenshots in capture order') })
+    expect(msg.content[3]).toEqual({ type: 'text', text: 'solve' })
+  })
 })
 
 describe('detectionText', () => {

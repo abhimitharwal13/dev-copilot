@@ -9,7 +9,7 @@ export interface ShortcutDeps {
   getWindow(): BrowserWindow | null
   /** Delivers a command to the renderer. */
   sendCommand(command: UiCommand): void
-  /** Absent until the screen capture iteration lands; its shortcut is then skipped. */
+  /** When absent (e.g. in tests), the screen capture shortcut is skipped. */
   screenCapture?: ScreenCaptureService
   /** Absent until the Whisper iteration lands; its shortcut is then skipped. */
   toggleRecording?: () => void
@@ -30,6 +30,30 @@ export async function captureClipboard(buffer: ContextBuffer): Promise<boolean> 
     return true
   }
   return false
+}
+
+/**
+ * Runs the region picker and adds the screenshot to the buffer, then brings
+ * the overlay forward with the prompt focused so Enter solves it.
+ */
+export async function captureScreen(service: ScreenCaptureService, deps: ShortcutDeps): Promise<void> {
+  const win = deps.getWindow()
+  try {
+    const shot = await service.captureRegion()
+    if (!shot) return
+    const count = deps.buffer.list().filter((i) => i.kind === 'image').length + 1
+    deps.buffer.addImage(shot.data, shot.mediaType, 'screen')
+    if (win) showAndFocus(win)
+    deps.sendCommand({ type: 'focusPrompt' })
+    deps.sendCommand({
+      type: 'notice',
+      tone: 'info',
+      message: `Screenshot ${count} added. Capture more, or type a question and press Enter.`
+    })
+  } catch (error) {
+    if (win) showAndFocus(win)
+    deps.sendCommand({ type: 'notice', tone: 'error', message: error instanceof Error ? error.message : String(error) })
+  }
 }
 
 /**
@@ -86,11 +110,7 @@ export function registerShortcuts(settings: ShortcutSettings, deps: ShortcutDeps
   }
   if (deps.screenCapture) {
     const service = deps.screenCapture
-    bind(settings.captureScreen, () => {
-      void service.captureRegion().then((shot) => {
-        if (shot) deps.buffer.addImage(shot.data, shot.mediaType, 'screen')
-      })
-    })
+    bind(settings.captureScreen, () => void captureScreen(service, deps))
   }
   if (deps.toggleRecording) bind(settings.toggleRecording, deps.toggleRecording)
   return failed

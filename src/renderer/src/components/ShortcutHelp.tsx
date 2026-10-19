@@ -29,7 +29,7 @@ export const IN_APP_SHORTCUTS: [string, string][] = [
 export function ShortcutHelp({ shortcuts, onClose }: { shortcuts: ShortcutSettings; onClose(): void }) {
   const ref = useDialogKeys<HTMLDivElement>(onClose)
   const globals = (Object.keys(SHORTCUT_LABELS) as (keyof ShortcutSettings)[]).filter(
-    (k) => k !== 'captureScreen' && k !== 'toggleRecording'
+    (k) => k !== 'toggleRecording'
   )
   return (
     <div className="dialog__backdrop">

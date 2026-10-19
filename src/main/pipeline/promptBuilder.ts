@@ -65,6 +65,13 @@ export function buildUserMessage(prompt: string, context: ContextItem[]): ChatMe
       })
     }
   }
+  const images = context.filter((c) => c.kind === 'image').length
+  if (images > 1) {
+    content.push({
+      type: 'text',
+      text: `The ${images} images above are screenshots in capture order; consecutive ones may overlap where the page was scrolled. Read them together as one problem, including constraints and sample input/output.`
+    })
+  }
   const trimmed = prompt.trim()
   content.push({
     type: 'text',

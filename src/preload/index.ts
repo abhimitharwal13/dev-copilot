@@ -36,6 +36,10 @@ const api: DevCopilotApi = {
     hideWindow: () => ipcRenderer.invoke(IPC.windowHide),
     saveFile: (defaultName, content) => ipcRenderer.invoke(IPC.fileSave, defaultName, content),
     failedShortcuts: () => ipcRenderer.invoke(IPC.shortcutsFailed)
+  },
+  capture: {
+    image: () => ipcRenderer.invoke(IPC.captureImage),
+    done: (rect) => ipcRenderer.send(IPC.captureDone, rect)
   }
 }
 
