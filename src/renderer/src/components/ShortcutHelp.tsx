@@ -7,7 +7,9 @@ import { useDialogKeys } from './useDialogKeys'
 export const IN_APP_SHORTCUTS: [string, string][] = [
   ['Enter', 'Send the prompt'],
   ['Shift+Enter', 'New line in the prompt'],
-  ['Escape', 'Stop the answer, leave the prompt box (so number keys work), close a dialog, or hide the overlay'],
+  ['Escape', 'Stop the answer, close a dialog, or hide the overlay'],
+  ['Tab', 'Move between the prompt box and the answer (number keys work in the answer)'],
+  ['CommandOrControl+M', 'Minimize the overlay (Ctrl + Shift + Space brings it back)'],
   ['1', '…9: jump to that numbered section of the answer (0: back to the question); not while typing in the prompt'],
   ['CommandOrControl+L', 'Focus the prompt box'],
   ['Alt+1', '…Alt + 5: send a quick follow-up'],

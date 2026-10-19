@@ -217,11 +217,11 @@ export function App() {
   const keyMap: KeyMap = {
     Escape: () => {
       if (state.busy) cancel()
-      // Leaving the prompt lets number keys jump between sections; a second Esc hides.
-      else if (document.activeElement === prompt.current && state.turns.length > 0) conversation.current?.focus()
       else void api.ui.hideWindow()
     },
     'CommandOrControl+L': () => prompt.current?.focus(),
+    // Tab moves between the prompt box and the answer, where number keys jump between sections.
+    Tab: () => (document.activeElement === prompt.current ? conversation.current?.focus() : prompt.current?.focus()),
     'CommandOrControl+N': newProblem,
     'CommandOrControl+,': () => setDialog('settings'),
     'CommandOrControl+/': () => setDialog('help'),

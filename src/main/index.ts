@@ -37,7 +37,12 @@ void app.whenReady().then(() => {
   // Only the app and Edit menus (copy, paste, quit). Electron's default View menu
   // zooms the page on ⌘ + / -, which fights the app's own text size setting.
   Menu.setApplicationMenu(
-    Menu.buildFromTemplate([...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []), { role: 'editMenu' as const }])
+    Menu.buildFromTemplate([
+      ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
+      { role: 'editMenu' as const },
+      // ⌘ / Ctrl + M minimizes; only that, since closing the overlay's only window would leave nothing to show.
+      { label: 'Window', submenu: [{ role: 'minimize' as const }] }
+    ])
   )
   const settings = new SettingsStore(join(app.getPath('userData'), 'settings.json'), secretCodec)
   const buffer = new ContextBuffer()

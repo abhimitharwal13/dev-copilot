@@ -74,8 +74,10 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | In the overlay | Action |
 | --- | --- |
 | `Enter` / `Shift + Enter` | Send / new line |
-| `Esc` | Stop the answer, leave the prompt box, close a dialog, or hide the overlay |
-| `1…9` / `0` | Jump to that numbered section of the answer / back to the question. Sending a prompt moves focus to the answer so these work right away; `Ctrl/⌘ + L` goes back to the prompt box, where digits type normally |
+| `Esc` | Stop the answer, close a dialog, or hide the overlay |
+| `Tab` | Move between the prompt box and the answer |
+| `Ctrl/⌘ + M` | Minimize (the show/hide shortcut brings it back) |
+| `1…9` / `0` | Jump to that numbered section of the answer / back to the question. Sending a prompt moves focus to the answer so these work right away; `Tab` or `Ctrl/⌘ + L` goes back to the prompt box, where digits type normally |
 | `Alt + 1…5` | Quick follow-ups for the current type (DSA: optimise space, edge cases, tests…; LLD: thread safety, new feature, patterns…; System Design: scale 10x, deep dive, schema & sharding, sequence diagram, interviewer follow-ups; Database: sample data, query tuning, NoSQL version…) |
 | `Ctrl/⌘ + 1…4` | Switch DSA / LLD / System Design / Database (re-runs the answer) |
 | `Ctrl/⌘ + N` | New problem |
