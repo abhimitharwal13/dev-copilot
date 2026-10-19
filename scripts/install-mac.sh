@@ -33,5 +33,6 @@ rm -rf "$APP"
 mv "$APP.new" "$APP"
 
 echo "==> Opening Dev Copilot"
-open -a "Dev Copilot"
+# Open by path: `open -a` can pick another copy of the app with the same bundle id.
+open "$APP"
 echo "Done. Press Cmd+Shift+S once and turn Screen Recording on for Dev Copilot when macOS asks."
