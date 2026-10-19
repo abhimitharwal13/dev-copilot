@@ -294,8 +294,8 @@ export function App() {
               <h1>Paste a problem. Get a structured breakdown.</h1>
               <p>
                 Press <kbd>{prettyAccelerator(settings.shortcuts.customPrompt)}</kbd> from any app to type a prompt
-                here, <kbd>{prettyAccelerator(settings.shortcuts.captureScreen)}</kbd> to screenshot a region of the
-                screen, or <kbd>{prettyAccelerator(settings.shortcuts.captureClipboard)}</kbd> to capture the clipboard,
+                here, <kbd>{prettyAccelerator(settings.shortcuts.captureScreen)}</kbd> to screenshot the screen,
+                or <kbd>{prettyAccelerator(settings.shortcuts.captureClipboard)}</kbd> to capture the clipboard,
                 then <kbd>{prettyAccelerator(settings.shortcuts.solveContext)}</kbd> to solve it.
               </p>
             </div>

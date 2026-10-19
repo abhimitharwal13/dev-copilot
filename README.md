@@ -63,7 +63,8 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | Global shortcut | Action |
 | --- | --- |
 | `Ctrl/⌘ + Shift + K` | Show the overlay with the prompt focused, to type a custom message |
-| `Ctrl/⌘ + Shift + S` | Screenshot a region of the screen into the context buffer (see below) |
+| `Ctrl/⌘ + Shift + S` | Screenshot the whole screen into the context buffer, instantly (see below) |
+| `Ctrl/⌘ + Alt + S` | Screenshot a region you pick first |
 | `Ctrl/⌘ + Shift + V` | Add the clipboard (image or text) to the context buffer |
 | `Ctrl/⌘ + Shift + Enter` | Solve the captured context without typing |
 | `Ctrl/⌘ + Shift + Space` | Show or hide the overlay |
@@ -89,9 +90,11 @@ Everything works without the mouse. Global shortcuts work while another app is f
 
 Code is written in Java by default; change it in Settings.
 
-### Screen region capture
+### Screen capture
 
-For pages where copying is blocked, `Ctrl/⌘ + Shift + S` freezes the screen under the mouse pointer and opens a region picker. The overlay steps aside while the screenshot is taken.
+For pages where copying is blocked, `Ctrl/⌘ + Shift + S` screenshots the whole screen under the mouse pointer straight into the context buffer, with nothing to select. The overlay fades out for a split second so it isn't in the shot.
+
+To capture only part of the screen, `Ctrl/⌘ + Alt + S` freezes the screen and opens a region picker:
 
 | In the picker | Action |
 | --- | --- |
@@ -102,7 +105,7 @@ For pages where copying is blocked, `Ctrl/⌘ + Shift + S` freezes the screen un
 | `F` | Select the full screen again (the default) |
 | `Enter` | Capture; `Esc` cancels |
 
-Dragging with the mouse also works. The screenshot joins the context buffer and the overlay comes forward with the prompt focused, so `Enter` solves it. Take several shots for a long statement (scroll, capture again); they are sent in order as one problem. A shot taken after an answer is attached to the next follow-up only. Images go to every provider; pick a vision model for OpenAI, Groq or Ollama.
+In the picker, dragging with the mouse also works. Either way, the screenshot joins the context buffer and the overlay comes forward with the prompt focused, so `Enter` solves it. Take several shots for a long statement (scroll, capture again); they are sent in order as one problem. A shot taken after an answer is attached to the next follow-up only. Images go to every provider; pick a vision model for OpenAI, Groq or Ollama.
 
 On macOS the first capture asks for **Screen Recording** permission. If it is off, the app opens System Settings > Privacy & Security > Screen & System Audio Recording; turn Dev Copilot on, then quit and reopen it. Because local builds are not signed with a developer certificate, macOS may ask again after you install a new build.
 

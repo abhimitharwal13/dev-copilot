@@ -20,6 +20,7 @@ export function defaultSettings(): Settings {
       solveContext: 'CommandOrControl+Shift+Enter',
       captureClipboard: 'CommandOrControl+Shift+V',
       captureScreen: 'CommandOrControl+Shift+S',
+      captureRegion: 'CommandOrControl+Alt+S',
       toggleRecording: 'CommandOrControl+Shift+R',
       toggleWindow: 'CommandOrControl+Shift+Space',
       scrollUp: 'CommandOrControl+Shift+Up',

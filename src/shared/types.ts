@@ -86,8 +86,10 @@ export interface ShortcutSettings {
   solveContext: string
   /** Adds the clipboard (text or image) to the context buffer. */
   captureClipboard: string
-  /** Freezes the screen and lets you select a region to add as an image. */
+  /** Screenshots the whole screen under the pointer into the buffer, with no picker. */
   captureScreen: string
+  /** Freezes the screen and lets you select a region to add as an image. */
+  captureRegion: string
   /** Push-to-talk transcription; wired up in a later iteration. */
   toggleRecording: string
   /** Show / hide the main window. */
@@ -102,7 +104,8 @@ export const SHORTCUT_LABELS: Record<keyof ShortcutSettings, string> = {
   customPrompt: 'Type a custom prompt',
   solveContext: 'Solve the captured context',
   captureClipboard: 'Capture clipboard',
-  captureScreen: 'Capture a screen region (screenshot)',
+  captureScreen: 'Screenshot the whole screen',
+  captureRegion: 'Screenshot a region (pick it first)',
   toggleRecording: 'Voice input (coming soon)',
   toggleWindow: 'Show / hide overlay',
   scrollUp: 'Scroll answer up',

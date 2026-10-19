@@ -19,8 +19,10 @@ export interface CapturedImage {
   mediaType: 'image/png' | 'image/jpeg'
 }
 
-/** Captures a region of the screen into the buffer (see ScreenCapture.ts). */
+/** Captures the screen, or a region of it, into the buffer (see ScreenCapture.ts). */
 export interface ScreenCaptureService {
+  /** Screenshots the whole display under the cursor at once, with no picker. */
+  captureScreen(): Promise<CapturedImage | null>
   /**
    * Lets the user pick a region and resolves with the image, or null if
    * cancelled. Rejects with a user-facing message when the OS denies access.

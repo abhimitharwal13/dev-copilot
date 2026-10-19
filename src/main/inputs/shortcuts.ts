@@ -33,13 +33,17 @@ export async function captureClipboard(buffer: ContextBuffer): Promise<boolean> 
 }
 
 /**
- * Runs the region picker and adds the screenshot to the buffer, then brings
- * the overlay forward with the prompt focused so Enter solves it.
+ * Screenshots the whole screen (or a picked region) into the buffer, then
+ * brings the overlay forward with the prompt focused so Enter solves it.
  */
-export async function captureScreen(service: ScreenCaptureService, deps: ShortcutDeps): Promise<void> {
+export async function captureScreen(
+  service: ScreenCaptureService,
+  deps: ShortcutDeps,
+  mode: 'full' | 'region' = 'full'
+): Promise<void> {
   const win = deps.getWindow()
   try {
-    const shot = await service.captureRegion()
+    const shot = await (mode === 'full' ? service.captureScreen() : service.captureRegion())
     if (!shot) return
     const count = deps.buffer.list().filter((i) => i.kind === 'image').length + 1
     deps.buffer.addImage(shot.data, shot.mediaType, 'screen')
@@ -111,6 +115,7 @@ export function registerShortcuts(settings: ShortcutSettings, deps: ShortcutDeps
   if (deps.screenCapture) {
     const service = deps.screenCapture
     bind(settings.captureScreen, () => void captureScreen(service, deps))
+    bind(settings.captureRegion, () => void captureScreen(service, deps, 'region'))
   }
   if (deps.toggleRecording) bind(settings.toggleRecording, deps.toggleRecording)
   return failed

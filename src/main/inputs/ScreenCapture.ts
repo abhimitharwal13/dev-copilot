@@ -20,6 +20,8 @@ const MAX_EDGE = 2576
 const MAX_PNG_BYTES = 3_700_000
 /** Time for the overlay to leave the screen before the screenshot is taken. */
 const HIDE_DELAY_MS = 220
+/** Fading to zero opacity needs only one redrawn frame, and the window never moves or loses focus. */
+const FADE_DELAY_MS = 60
 
 const MAC_PRIVACY_PANE = 'x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture'
 
@@ -41,8 +43,8 @@ interface PickerSession {
 }
 
 /**
- * Freezes the display under the cursor, lets the user select a region on a
- * full-screen picker (keyboard or mouse), and returns the crop.
+ * Screenshots the display under the cursor: the whole of it, or a region the
+ * user selects on a full-screen picker (keyboard or mouse).
  */
 export class ElectronScreenCapture implements ScreenCaptureService {
   private running: Promise<CapturedImage | null> | null = null
@@ -57,13 +59,18 @@ export class ElectronScreenCapture implements ScreenCaptureService {
     })
   }
 
-  captureRegion(): Promise<CapturedImage | null> {
-    // A second press while the picker is open does nothing new.
-    this.running ??= this.run().finally(() => (this.running = null))
+  captureScreen(): Promise<CapturedImage | null> {
+    this.running ??= this.run('full').finally(() => (this.running = null))
     return this.running
   }
 
-  private async run(): Promise<CapturedImage | null> {
+  captureRegion(): Promise<CapturedImage | null> {
+    // A second press while the picker is open does nothing new.
+    this.running ??= this.run('region').finally(() => (this.running = null))
+    return this.running
+  }
+
+  private async run(mode: 'full' | 'region'): Promise<CapturedImage | null> {
     if (process.platform === 'darwin') {
       const status = systemPreferences.getMediaAccessStatus('screen')
       if (status === 'denied' || status === 'restricted') throw this.permissionError()
@@ -71,9 +78,12 @@ export class ElectronScreenCapture implements ScreenCaptureService {
     const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
     const overlay = this.getOverlay()
     const overlayWasVisible = overlay?.isVisible() ?? false
+    // macOS and Windows can fade the overlay out in place; hiding it makes the screen jump.
+    const fade = process.platform !== 'linux'
     if (overlayWasVisible) {
-      overlay!.hide()
-      await new Promise((r) => setTimeout(r, HIDE_DELAY_MS))
+      if (fade) overlay!.setOpacity(0)
+      else overlay!.hide()
+      await new Promise((r) => setTimeout(r, fade ? FADE_DELAY_MS : HIDE_DELAY_MS))
     }
     try {
       const image = await grabDisplay(display)
@@ -81,11 +91,15 @@ export class ElectronScreenCapture implements ScreenCaptureService {
       if (image.isEmpty() || (process.platform === 'darwin' && systemPreferences.getMediaAccessStatus('screen') !== 'granted')) {
         throw this.permissionError()
       }
+      if (mode === 'full') return encode(image)
       const rect = await this.pick(display, image)
       if (!rect) return null
       return encode(image.crop(toImagePixels(rect, display.bounds, image.getSize())))
     } finally {
-      if (overlayWasVisible && overlay && !overlay.isDestroyed()) overlay.showInactive()
+      if (overlayWasVisible && overlay && !overlay.isDestroyed()) {
+        if (fade) overlay.setOpacity(1)
+        else overlay.showInactive()
+      }
     }
   }
 

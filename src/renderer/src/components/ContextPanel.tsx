@@ -31,7 +31,7 @@ export function ContextPanel({ items, clipboardShortcut, screenShortcut }: Props
       </header>
       {items.length === 0 ? (
         <p className="context__empty">
-          Press <kbd>{prettyAccelerator(screenShortcut)}</kbd> in any app to screenshot a region of the screen, or{' '}
+          Press <kbd>{prettyAccelerator(screenShortcut)}</kbd> in any app to screenshot the screen, or{' '}
           <kbd>{prettyAccelerator(clipboardShortcut)}</kbd> to capture the clipboard. You can also paste into the prompt.
         </p>
       ) : (
