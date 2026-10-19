@@ -100,7 +100,8 @@ export function registerShortcuts(settings: ShortcutSettings, deps: ShortcutDeps
   bind(
     settings.toggleWindow,
     withWindow((win) => {
-      if (win.isVisible() && win.isFocused()) win.hide()
+      // Always-on-top means visible is on screen; hide it even when another app has focus.
+      if (win.isVisible()) win.hide()
       else showAndFocus(win)
     })
   )
