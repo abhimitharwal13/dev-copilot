@@ -7,6 +7,7 @@ import type { ContextBuffer } from '../inputs/ContextBuffer'
 import type { SolvePipeline } from '../pipeline/pipeline'
 import { createProvider, listProviders, PROVIDER_IDS } from '../providers/registry'
 import type { SettingsStore } from '../settings/SettingsStore'
+import { nudgeWindow } from '../window'
 
 export interface HandlerDeps {
   settings: SettingsStore
@@ -41,6 +42,10 @@ export function registerIpcHandlers({ settings, buffer, pipeline, getWindow }: H
   ipcMain.handle(IPC.solveCancel, (_e, requestId: string) => pipeline.cancel(requestId))
   ipcMain.handle(IPC.conversationReset, (_e, conversationId: string) => pipeline.reset(conversationId))
   ipcMain.handle(IPC.windowHide, () => getWindow()?.hide())
+  ipcMain.handle(IPC.windowMove, (_e, direction: 'Left' | 'Right' | 'Up' | 'Down') => {
+    const win = getWindow()
+    if (win) nudgeWindow(win, direction)
+  })
   ipcMain.handle(IPC.fileSave, async (_e, defaultName: string, content: string) => {
     const win = getWindow()
     const ext = extname(defaultName).slice(1)

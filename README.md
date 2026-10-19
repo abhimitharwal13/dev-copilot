@@ -68,15 +68,16 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | `Ctrl/⌘ + Shift + V` | Add the clipboard (image or text) to the context buffer |
 | `Ctrl/⌘ + Shift + Enter` | Solve the captured context without typing |
 | `Ctrl/⌘ + Shift + Space` | Show or hide the overlay |
+| `Ctrl/⌘ + M` | Minimize the overlay; press again (from any app) to bring it back |
+| `Ctrl/⌘ + Shift + M` | Mouse click-through on / off. On by default: clicks, scrolling and hovering go to the app behind the overlay, so you can draw or browse under it |
 | `Ctrl/⌘ + Shift + Up / Down` | Scroll the answer without focusing the overlay |
-| `Ctrl/⌘ + Alt + Arrow keys` | Move the overlay |
+| `Ctrl/⌘ + Alt + Arrow keys` | Move the overlay (inside the overlay, `Ctrl/⌘ + Arrow keys` alone also works, except in the prompt box) |
 
 | In the overlay | Action |
 | --- | --- |
 | `Enter` / `Shift + Enter` | Send / new line |
 | `Esc` | Stop the answer, close a dialog, or hide the overlay |
 | `Tab` | Move between the prompt box and the answer |
-| `Ctrl/⌘ + M` | Minimize; press it again from any app to bring the overlay back |
 | `1…9` / `0` | Jump to that numbered section of the answer / back to the question. Sending a prompt moves focus to the answer so these work right away; `Tab` or `Ctrl/⌘ + L` goes back to the prompt box, where digits type normally |
 | `Alt + 1…5` | Quick follow-ups for the current type (DSA: optimise space, edge cases, tests…; LLD: thread safety, new feature, patterns…; System Design: scale 10x, deep dive, schema & sharding, sequence diagram, interviewer follow-ups; Database: sample data, query tuning, NoSQL version…) |
 | `Ctrl/⌘ + 1…4` | Switch DSA / LLD / System Design / Database (re-runs the answer) |

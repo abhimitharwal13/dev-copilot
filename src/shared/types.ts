@@ -75,6 +75,8 @@ export interface OverlaySettings {
   alwaysOnTop: boolean
   /** Text and layout size, 0.6..1.5 (1 = 100%). */
   zoom: number
+  /** Mouse clicks, scrolls and hovers go to the app behind; the overlay is driven by keyboard only. */
+  clickThrough: boolean
 }
 
 /**
@@ -96,6 +98,10 @@ export interface ShortcutSettings {
   toggleRecording: string
   /** Show / hide the main window. */
   toggleWindow: string
+  /** Minimize the overlay; pressed again (from any app), restore it. */
+  minimizeWindow: string
+  /** Turn mouse click-through on or off. */
+  toggleClickThrough: string
   scrollUp: string
   scrollDown: string
   /** Held with an arrow key to move the window, e.g. `CommandOrControl+Alt` + Left. */
@@ -110,6 +116,8 @@ export const SHORTCUT_LABELS: Record<keyof ShortcutSettings, string> = {
   captureRegion: 'Screenshot a region (pick it first)',
   toggleRecording: 'Voice input (coming soon)',
   toggleWindow: 'Show / hide overlay',
+  minimizeWindow: 'Minimize / restore overlay',
+  toggleClickThrough: 'Mouse goes through the overlay (on / off)',
   scrollUp: 'Scroll answer up',
   scrollDown: 'Scroll answer down',
   moveWindowModifier: 'Move overlay (+ arrow keys)'

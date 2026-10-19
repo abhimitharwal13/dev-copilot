@@ -14,7 +14,7 @@ export function defaultSettings(): Settings {
     interviewStepMode: false,
     temperature: 0.2,
     maxTokens: 16000,
-    overlay: { backgroundOpacity: 0.85, alwaysOnTop: true, zoom: 0.9 },
+    overlay: { backgroundOpacity: 0.85, alwaysOnTop: true, zoom: 0.9, clickThrough: true },
     shortcuts: {
       customPrompt: 'CommandOrControl+Shift+K',
       solveContext: 'CommandOrControl+Shift+Enter',
@@ -23,6 +23,8 @@ export function defaultSettings(): Settings {
       captureRegion: 'CommandOrControl+Alt+S',
       toggleRecording: 'CommandOrControl+Shift+R',
       toggleWindow: 'CommandOrControl+Shift+Space',
+      minimizeWindow: 'CommandOrControl+M',
+      toggleClickThrough: 'CommandOrControl+Shift+M',
       scrollUp: 'CommandOrControl+Shift+Up',
       scrollDown: 'CommandOrControl+Shift+Down',
       moveWindowModifier: 'CommandOrControl+Alt'

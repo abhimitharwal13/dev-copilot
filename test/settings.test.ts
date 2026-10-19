@@ -38,7 +38,7 @@ describe('SettingsStore', () => {
   it('raises unreadably low opacities from older versions and adds the text size', () => {
     const faint = file()
     writeFileSync(faint, JSON.stringify({ schemaVersion: 3, overlay: { backgroundOpacity: 0.2, alwaysOnTop: true } }))
-    expect(new SettingsStore(faint, codec).get().overlay).toEqual({ backgroundOpacity: 0.85, alwaysOnTop: true, zoom: 0.9 })
+    expect(new SettingsStore(faint, codec).get().overlay).toEqual({ backgroundOpacity: 0.85, alwaysOnTop: true, zoom: 0.9, clickThrough: true })
     const chosen = file()
     writeFileSync(chosen, JSON.stringify({ schemaVersion: 3, overlay: { backgroundOpacity: 0.75, alwaysOnTop: true } }))
     expect(new SettingsStore(chosen, codec).get().overlay.backgroundOpacity).toBe(0.75)
@@ -90,7 +90,7 @@ describe('SettingsStore defaults and migration', () => {
   it('defaults to Java and a translucent always-on-top overlay', () => {
     const s = new SettingsStore(file(), codec).get()
     expect(s.preferredLanguage).toBe('Java')
-    expect(s.overlay).toEqual({ backgroundOpacity: 0.85, alwaysOnTop: true, zoom: 0.9 })
+    expect(s.overlay).toEqual({ backgroundOpacity: 0.85, alwaysOnTop: true, zoom: 0.9, clickThrough: true })
     expect(s.shortcuts.customPrompt).toBe('CommandOrControl+Shift+K')
   })
 
@@ -108,6 +108,6 @@ describe('SettingsStore defaults and migration', () => {
   it('clamps background opacity', () => {
     const store = new SettingsStore(file(), codec)
     expect(store.update({ overlay: { backgroundOpacity: 0 } }).overlay.backgroundOpacity).toBe(0.5)
-    expect(store.update({ overlay: { backgroundOpacity: 3 } }).overlay).toEqual({ backgroundOpacity: 1, alwaysOnTop: true, zoom: 0.9 })
+    expect(store.update({ overlay: { backgroundOpacity: 3 } }).overlay).toEqual({ backgroundOpacity: 1, alwaysOnTop: true, zoom: 0.9, clickThrough: true })
   })
 })

@@ -29,6 +29,7 @@ export const IPC = {
   conversationReset: 'conversation:reset',
   uiCommand: 'ui:command',
   windowHide: 'window:hide',
+  windowMove: 'window:move',
   fileSave: 'file:save',
   shortcutsFailed: 'shortcuts:failed',
   captureImage: 'capture:image',
@@ -64,6 +65,7 @@ export interface DevCopilotApi {
     /** Commands triggered by global shortcuts while another app may have focus. */
     onCommand(listener: (command: UiCommand) => void): () => void
     hideWindow(): Promise<void>
+    moveWindow(direction: 'Left' | 'Right' | 'Up' | 'Down'): Promise<void>
     /** Opens a save dialog and writes the file; resolves to the path, or null when cancelled. */
     saveFile(defaultName: string, content: string): Promise<string | null>
     /** Global shortcuts that could not be registered, usually because another app owns them. */

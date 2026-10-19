@@ -62,6 +62,8 @@ export function applyOverlaySettings(win: BrowserWindow, overlay: OverlaySetting
   win.webContents.setZoomFactor(zoom)
   // 'screen-saver' keeps the overlay above other windows, including a full-screen browser.
   win.setAlwaysOnTop(overlay.alwaysOnTop, 'screen-saver')
+  // Click-through: the mouse works the app behind (drawing, scrolling); the overlay stays keyboard-driven.
+  win.setIgnoreMouseEvents(overlay.clickThrough)
   // macOS gives each full-screen app its own Space; without this the overlay
   // stays behind on the desktop Space and never shows over a full-screen browser.
   if (process.platform === 'darwin') {

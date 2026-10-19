@@ -4,7 +4,7 @@ import { IPC } from '../shared/ipc'
 import type { UiCommand } from '../shared/types'
 import { ContextBuffer } from './inputs/ContextBuffer'
 import { ElectronScreenCapture } from './inputs/ScreenCapture'
-import { registerShortcuts, syncRestoreShortcut } from './inputs/shortcuts'
+import { registerShortcuts } from './inputs/shortcuts'
 import { registerIpcHandlers } from './ipc/handlers'
 import { SolvePipeline } from './pipeline/pipeline'
 import { createProvider } from './providers/registry'
@@ -39,9 +39,8 @@ void app.whenReady().then(() => {
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
       ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
-      { role: 'editMenu' as const },
-      // ⌘ / Ctrl + M minimizes; only that, since closing the overlay's only window would leave nothing to show.
-      { label: 'Window', submenu: [{ role: 'minimize' as const }] }
+      { role: 'editMenu' as const }
+      // ⌘ / Ctrl + M (minimize) is a global shortcut instead of a menu item, so it also restores.
     ])
   )
   const settings = new SettingsStore(join(app.getPath('userData'), 'settings.json'), secretCodec)
@@ -59,9 +58,6 @@ void app.whenReady().then(() => {
   const openWindow = (): BrowserWindow => {
     const win = createOverlayWindow(settings.get().overlay)
     win.on('closed', () => (mainWindow = null))
-    for (const event of ['minimize', 'restore', 'show', 'hide', 'focus'] as const) {
-      win.on(event as 'minimize', () => syncRestoreShortcut(win))
-    }
     return win
   }
 
@@ -74,11 +70,25 @@ void app.whenReady().then(() => {
     buffer,
     getWindow: () => mainWindow,
     screenCapture: new ElectronScreenCapture(() => mainWindow),
-    sendCommand: (command: UiCommand) => mainWindow?.webContents.send(IPC.uiCommand, command)
+    sendCommand: (command: UiCommand) => mainWindow?.webContents.send(IPC.uiCommand, command),
+    toggleClickThrough: () => {
+      const on = !settings.get().overlay.clickThrough
+      settings.update({ overlay: { clickThrough: on } })
+      mainWindow?.webContents.send(IPC.uiCommand, {
+        type: 'notice',
+        tone: 'info',
+        message: on ? 'Mouse goes through the overlay' : 'Mouse works on the overlay'
+      } satisfies UiCommand)
+    }
   }
+  // Rebinding from inside a global shortcut's own handler (e.g. click-through toggling a setting)
+  // can hang on Linux, so only rebind when the shortcuts themselves changed.
+  let boundShortcuts = ''
   const bindShortcuts = (): void => {
+    const next = JSON.stringify(settings.get().shortcuts)
+    if (next === boundShortcuts) return
+    boundShortcuts = next
     failedShortcuts = registerShortcuts(settings.get().shortcuts, shortcutDeps)
-    syncRestoreShortcut(mainWindow)
     if (failedShortcuts.length) console.warn(`Could not register shortcuts: ${failedShortcuts.join(', ')}`)
   }
   bindShortcuts()

@@ -76,7 +76,8 @@ function isTextField(target: EventTarget | null): boolean {
   return target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
 }
 
-export type KeyMap = Record<string, (e: KeyboardEvent) => void>
+/** A handler returning `false` passes the key on, as if it were not bound. */
+export type KeyMap = Record<string, (e: KeyboardEvent) => void | boolean>
 
 /**
  * In-window shortcuts. Keys are accelerators as produced by `eventAccelerator`.
@@ -92,9 +93,9 @@ export function useKeyMap(map: KeyMap): void {
       if (!handler) return
       // Bare printable keys (section numbers) never fire while typing in a text field.
       if (accelerator?.length === 1 && isTextField(e.target)) return
+      if (handler(e) === false) return
       e.preventDefault()
       e.stopPropagation()
-      handler(e)
     }
     window.addEventListener('keydown', onKeyDown, true)
     return () => window.removeEventListener('keydown', onKeyDown, true)

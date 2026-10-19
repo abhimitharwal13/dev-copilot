@@ -13,6 +13,8 @@ export interface ShortcutDeps {
   screenCapture?: ScreenCaptureService
   /** Absent until the Whisper iteration lands; its shortcut is then skipped. */
   toggleRecording?: () => void
+  /** Flips mouse click-through and reports the new state. */
+  toggleClickThrough?: () => void
 }
 
 /** Adds whatever is on the clipboard (image first, then text) to the buffer. */
@@ -106,6 +108,15 @@ export function registerShortcuts(settings: ShortcutSettings, deps: ShortcutDeps
       else showAndFocus(win)
     })
   )
+  bind(
+    settings.minimizeWindow,
+    withWindow((win) => {
+      // Global, so pressing it again from the app underneath brings the overlay back.
+      if (win.isMinimized() || !win.isVisible()) showAndFocus(win)
+      else win.minimize()
+    })
+  )
+  if (deps.toggleClickThrough) bind(settings.toggleClickThrough, deps.toggleClickThrough)
   // Scrolling and moving work without focusing the overlay, so the app underneath keeps the keyboard.
   bind(settings.scrollUp, () => deps.sendCommand({ type: 'scroll', direction: 'up' }))
   bind(settings.scrollDown, () => deps.sendCommand({ type: 'scroll', direction: 'down' }))
@@ -123,16 +134,3 @@ export function registerShortcuts(settings: ShortcutSettings, deps: ShortcutDeps
   return failed
 }
 
-const MINIMIZE = 'CommandOrControl+M'
-
-/**
- * ⌘/Ctrl + M minimizes the overlay (a Window menu item); pressing it again
- * from any app brings it back. The global binding exists only while the
- * overlay is minimized, so other apps keep their own ⌘/Ctrl + M otherwise.
- */
-export function syncRestoreShortcut(win: BrowserWindow | null): void {
-  const minimized = !!win && !win.isDestroyed() && win.isMinimized()
-  const bound = globalShortcut.isRegistered(MINIMIZE)
-  if (minimized && !bound) globalShortcut.register(MINIMIZE, () => showAndFocus(win))
-  else if (!minimized && bound) globalShortcut.unregister(MINIMIZE)
-}

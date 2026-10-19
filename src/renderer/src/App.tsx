@@ -259,6 +259,11 @@ export function App() {
   }
   // Bare digits jump to numbered sections; they are ignored while the prompt box has focus.
   for (let n = 0; n <= Math.min(9, sections.length); n++) keyMap[String(n)] = () => jumpTo(n)
+  // ⌘/Ctrl + arrows move the overlay while it has focus; in the prompt box they keep moving the cursor.
+  for (const direction of ['Left', 'Right', 'Up', 'Down'] as const) {
+    keyMap[`CommandOrControl+${direction}`] = () =>
+      document.activeElement === prompt.current ? false : void api.ui.moveWindow(direction)
+  }
   TYPE_ORDER.forEach((t, i) => (keyMap[`CommandOrControl+${i + 1}`] = () => switchType(t)))
   const answerType = state.detection?.type ?? typeOverride ?? 'dsa'
   if (isFollowUp && !state.busy) {
