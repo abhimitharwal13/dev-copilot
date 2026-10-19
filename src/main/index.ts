@@ -4,7 +4,7 @@ import { IPC } from '../shared/ipc'
 import type { UiCommand } from '../shared/types'
 import { ContextBuffer } from './inputs/ContextBuffer'
 import { ElectronScreenCapture } from './inputs/ScreenCapture'
-import { registerShortcuts } from './inputs/shortcuts'
+import { registerShortcuts, syncRestoreShortcut } from './inputs/shortcuts'
 import { registerIpcHandlers } from './ipc/handlers'
 import { SolvePipeline } from './pipeline/pipeline'
 import { createProvider } from './providers/registry'
@@ -59,6 +59,9 @@ void app.whenReady().then(() => {
   const openWindow = (): BrowserWindow => {
     const win = createOverlayWindow(settings.get().overlay)
     win.on('closed', () => (mainWindow = null))
+    for (const event of ['minimize', 'restore', 'show', 'hide', 'focus'] as const) {
+      win.on(event as 'minimize', () => syncRestoreShortcut(win))
+    }
     return win
   }
 
@@ -75,6 +78,7 @@ void app.whenReady().then(() => {
   }
   const bindShortcuts = (): void => {
     failedShortcuts = registerShortcuts(settings.get().shortcuts, shortcutDeps)
+    syncRestoreShortcut(mainWindow)
     if (failedShortcuts.length) console.warn(`Could not register shortcuts: ${failedShortcuts.join(', ')}`)
   }
   bindShortcuts()

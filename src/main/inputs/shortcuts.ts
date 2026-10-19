@@ -122,3 +122,17 @@ export function registerShortcuts(settings: ShortcutSettings, deps: ShortcutDeps
   if (deps.toggleRecording) bind(settings.toggleRecording, deps.toggleRecording)
   return failed
 }
+
+const MINIMIZE = 'CommandOrControl+M'
+
+/**
+ * ⌘/Ctrl + M minimizes the overlay (a Window menu item); pressing it again
+ * from any app brings it back. The global binding exists only while the
+ * overlay is minimized, so other apps keep their own ⌘/Ctrl + M otherwise.
+ */
+export function syncRestoreShortcut(win: BrowserWindow | null): void {
+  const minimized = !!win && !win.isDestroyed() && win.isMinimized()
+  const bound = globalShortcut.isRegistered(MINIMIZE)
+  if (minimized && !bound) globalShortcut.register(MINIMIZE, () => showAndFocus(win))
+  else if (!minimized && bound) globalShortcut.unregister(MINIMIZE)
+}
