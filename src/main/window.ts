@@ -36,8 +36,7 @@ export function createOverlayWindow(overlay: OverlaySettings): BrowserWindow {
       sandbox: true
     }
   })
-  // 'screen-saver' keeps the overlay above full-screen apps on macOS.
-  if (overlay.alwaysOnTop) win.setAlwaysOnTop(true, 'screen-saver')
+  applyOverlaySettings(win, overlay)
   win.once('ready-to-show', () => win.show())
 
   // Links in answers open in the system browser, never inside the app.
@@ -55,7 +54,13 @@ export function createOverlayWindow(overlay: OverlaySettings): BrowserWindow {
 }
 
 export function applyOverlaySettings(win: BrowserWindow, overlay: OverlaySettings): void {
+  // 'screen-saver' keeps the overlay above other windows, including a full-screen browser.
   win.setAlwaysOnTop(overlay.alwaysOnTop, 'screen-saver')
+  // macOS gives each full-screen app its own Space; without this the overlay
+  // stays behind on the desktop Space and never shows over a full-screen browser.
+  if (process.platform === 'darwin') {
+    win.setVisibleOnAllWorkspaces(overlay.alwaysOnTop, { visibleOnFullScreen: overlay.alwaysOnTop })
+  }
 }
 
 /** Brings the overlay forward and gives it keyboard focus. */

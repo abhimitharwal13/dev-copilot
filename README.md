@@ -49,7 +49,7 @@ Open **Settings** (the provider pill, top right), pick a provider, paste an API 
 
 ### The overlay
 
-The window is a frameless, transparent overlay that stays above other windows, so you can read the code behind it. Background opacity is adjustable (`Ctrl/⌘ + [` and `]`, or in Settings) while text stays fully opaque. On macOS the background also gets a native blur.
+The window is a frameless, transparent overlay that stays above other windows, so you can read the code behind it. Background opacity is adjustable (`Ctrl/⌘ + [` and `]`, or in Settings) while text stays fully opaque. On macOS the background also gets a native blur. With **Always on top** on, the overlay also appears over full-screen apps (for example a browser in macOS full screen), on whichever Space you are in.
 
 ![Translucent overlay over an editor](docs/overlay-translucent.png)
 
