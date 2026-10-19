@@ -146,6 +146,12 @@ export function App() {
     void saveSettings({ overlay: { backgroundOpacity: next } })
   }
 
+  const changeZoom = (delta: number | null): void => {
+    if (!settings) return
+    const next = delta === null ? 1 : Math.round((settings.overlay.zoom + delta) * 100) / 100
+    void saveSettings({ overlay: { zoom: next } })
+  }
+
   const isFollowUp = state.turns.some((t) => t.status === 'done')
   const lastAnswer = state.turns.at(-1)?.answer ?? ''
 
@@ -198,6 +204,10 @@ export function App() {
     },
     'CommandOrControl+[': () => changeOpacity(-OPACITY_STEP),
     'CommandOrControl+]': () => changeOpacity(OPACITY_STEP),
+    'CommandOrControl+-': () => changeZoom(-0.1),
+    'CommandOrControl+=': () => changeZoom(0.1),
+    'CommandOrControl+Shift+=': () => changeZoom(0.1),
+    'CommandOrControl+0': () => changeZoom(null),
     PageUp: () => scroll('up'),
     PageDown: () => scroll('down'),
     'Alt+Up': () => scroll('up'),

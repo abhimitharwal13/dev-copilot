@@ -70,9 +70,11 @@ export interface Settings {
 }
 
 export interface OverlaySettings {
-  /** Alpha of the window background, 0.2..1. Text always stays opaque. */
+  /** Alpha of the window background, 0.5..1. Text always stays opaque. */
   backgroundOpacity: number
   alwaysOnTop: boolean
+  /** Text and layout size, 0.6..1.5 (1 = 100%). */
+  zoom: number
 }
 
 /**

@@ -22,6 +22,7 @@ export const IN_APP_SHORTCUTS: [string, string][] = [
   ['CommandOrControl+Shift+Backspace', 'Remove the newest context item'],
   ['CommandOrControl+Shift+X', 'Clear all context'],
   ['CommandOrControl+[', 'Less opaque background (Ctrl + ] for more)'],
+  ['CommandOrControl+-', 'Smaller text (Ctrl + = bigger, Ctrl + 0 reset)'],
   ['CommandOrControl+,', 'Settings'],
   ['CommandOrControl+/', 'This list']
 ]

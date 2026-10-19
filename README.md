@@ -85,6 +85,8 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | `Ctrl/⌘ + I` | Interview step mode: clarifying questions first, then one section per `Alt + N` |
 | `PageUp / PageDown`, `Alt + Up / Down` | Scroll the answer |
 | `Ctrl/⌘ + Shift + Backspace` / `Ctrl/⌘ + Shift + X` | Remove newest context item / clear context |
+| `Ctrl/⌘ + [` / `Ctrl/⌘ + ]` | Less / more opaque background |
+| `Ctrl/⌘ + -` / `Ctrl/⌘ + =` / `Ctrl/⌘ + 0` | Smaller / bigger / default text size |
 | `Ctrl/⌘ + ,` | Settings (Tab between fields, `Ctrl/⌘ + Enter` saves, `Esc` cancels) |
 | `Ctrl/⌘ + /` or `F1` | Shortcut list |
 

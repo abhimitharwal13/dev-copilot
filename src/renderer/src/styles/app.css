@@ -1,6 +1,6 @@
 :root {
   /* Set from settings on .app; the window itself is fully transparent. */
-  --bg-alpha: 0.55;
+  --bg-alpha: 0.85;
   --bg: rgb(15 17 21 / var(--bg-alpha));
   /* Panels sit on top of --bg, so they only tint it; stacking more dark alpha would make them opaque. */
   --panel: rgb(255 255 255 / 3%);
@@ -22,7 +22,7 @@
 html, body, #root { height: 100%; margin: 0; background: transparent; }
 body {
   color: var(--text);
-  font: 14px/1.55 system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font: 13px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
   /* Keeps text readable over busy backgrounds without making the panel opaque. */
   text-shadow: 0 1px 2px rgb(0 0 0 / 45%);
 }
@@ -101,7 +101,7 @@ kbd { font-family: var(--mono); font-size: 12px; padding: 1px 5px; border: 1px s
 .banner { background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 16px; }
 .banner--info { max-width: 920px; margin: 0 auto 16px; border-color: var(--accent); }
 .empty { max-width: 640px; margin: 12vh auto 0; text-align: center; color: var(--muted); }
-.empty h1 { color: var(--text); font-size: 22px; }
+.empty h1 { color: var(--text); font-size: 18px; }
 .turn { max-width: 920px; margin: 0 auto 28px; }
 .turn__prompt { white-space: pre-wrap; background: var(--panel-2); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; color: var(--muted); }
 .thinking { color: var(--muted); animation: pulse 1.4s ease-in-out infinite; }

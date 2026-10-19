@@ -14,7 +14,7 @@ export function defaultSettings(): Settings {
     interviewStepMode: false,
     temperature: 0.2,
     maxTokens: 16000,
-    overlay: { backgroundOpacity: 0.55, alwaysOnTop: true },
+    overlay: { backgroundOpacity: 0.85, alwaysOnTop: true, zoom: 0.9 },
     shortcuts: {
       customPrompt: 'CommandOrControl+Shift+K',
       solveContext: 'CommandOrControl+Shift+Enter',

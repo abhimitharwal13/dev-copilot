@@ -25,7 +25,7 @@ export function ContextPanel({ items, clipboardShortcut, screenShortcut }: Props
         <h2>Context</h2>
         {items.length > 0 && (
           <button type="button" className="link" onClick={() => void api.context.clear()}>
-            Clear
+            Clear <kbd>{prettyAccelerator('CommandOrControl+Shift+X')}</kbd>
           </button>
         )}
       </header>

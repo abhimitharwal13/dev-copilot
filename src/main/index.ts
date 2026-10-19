@@ -1,5 +1,5 @@
 import { join } from 'node:path'
-import { app, BrowserWindow, globalShortcut, ipcMain, safeStorage } from 'electron'
+import { app, BrowserWindow, globalShortcut, ipcMain, Menu, safeStorage } from 'electron'
 import { IPC } from '../shared/ipc'
 import type { UiCommand } from '../shared/types'
 import { ContextBuffer } from './inputs/ContextBuffer'
@@ -34,6 +34,11 @@ app.on('second-instance', () => {
 })
 
 void app.whenReady().then(() => {
+  // Only the app and Edit menus (copy, paste, quit). Electron's default View menu
+  // zooms the page on ⌘ + / -, which fights the app's own text size setting.
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []), { role: 'editMenu' as const }])
+  )
   const settings = new SettingsStore(join(app.getPath('userData'), 'settings.json'), secretCodec)
   const buffer = new ContextBuffer()
   const pipeline = new SolvePipeline({

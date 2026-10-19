@@ -36,6 +36,8 @@ export function createOverlayWindow(overlay: OverlaySettings): BrowserWindow {
     }
   })
   applyOverlaySettings(win, overlay)
+  // Chromium resets zoom on navigation and can remember a stray zoom per page; the setting always wins.
+  win.webContents.on('did-finish-load', () => win.webContents.setZoomFactor(zoom))
   win.once('ready-to-show', () => win.show())
 
   // Links in answers open in the system browser, never inside the app.
@@ -52,7 +54,12 @@ export function createOverlayWindow(overlay: OverlaySettings): BrowserWindow {
   return win
 }
 
+/** Text size from settings, re-applied after every page load. */
+let zoom = 1
+
 export function applyOverlaySettings(win: BrowserWindow, overlay: OverlaySettings): void {
+  zoom = overlay.zoom
+  win.webContents.setZoomFactor(zoom)
   // 'screen-saver' keeps the overlay above other windows, including a full-screen browser.
   win.setAlwaysOnTop(overlay.alwaysOnTop, 'screen-saver')
   // macOS gives each full-screen app its own Space; without this the overlay

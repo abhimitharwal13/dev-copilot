@@ -16,8 +16,11 @@ export interface SecretCodec {
   decrypt(encoded: string): string
 }
 
+/** Below this, text over a busy page is unreadable. */
+const MIN_OPACITY = 0.5
+
 /** Bumped when a default changes in a way existing files should pick up; see `migrate`. */
-const SCHEMA_VERSION = 3
+const SCHEMA_VERSION = 4
 
 /** On-disk shape: identical to `Settings` except keys are encrypted. */
 interface StoredSettings extends Omit<Settings, 'providers'> {
@@ -61,7 +64,8 @@ export class SettingsStore {
       shortcuts: { ...this.settings.shortcuts, ...stripUndefined(patch.shortcuts ?? {}) },
       overlay: { ...this.settings.overlay, ...stripUndefined(patch.overlay ?? {}) }
     }
-    next.overlay.backgroundOpacity = clamp(next.overlay.backgroundOpacity, 0.1, 1)
+    next.overlay.backgroundOpacity = clamp(next.overlay.backgroundOpacity, MIN_OPACITY, 1)
+    next.overlay.zoom = clamp(next.overlay.zoom, 0.6, 1.5)
     for (const [id, change] of Object.entries(patch.providers ?? {}) as [ProviderId, Partial<ProviderConfig>][]) {
       if (!PROVIDER_IDS.includes(id) || !change) continue
       const merged = { ...next.providers[id], ...stripUndefined(change) }
@@ -137,7 +141,11 @@ function migrate(settings: Settings, fromVersion: number): Settings {
   if (fromVersion < 3 && next.activeProvider === 'anthropic' && !next.providers.anthropic.apiKey) {
     next = { ...next, activeProvider: 'claudecode' }
   }
-  return next
+  // v4: very low opacities made text unreadable over busy pages; start such files from the new default.
+  if (fromVersion < 4 && next.overlay.backgroundOpacity < 0.7) {
+    next = { ...next, overlay: { ...next.overlay, backgroundOpacity: defaultSettings().overlay.backgroundOpacity } }
+  }
+  return { ...next, overlay: { ...next.overlay, backgroundOpacity: clamp(next.overlay.backgroundOpacity, MIN_OPACITY, 1) } }
 }
 
 function clamp(value: number, min: number, max: number): number {
