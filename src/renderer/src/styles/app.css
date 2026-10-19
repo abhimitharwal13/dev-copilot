@@ -153,3 +153,5 @@ kbd { font-family: var(--mono); font-size: 12px; padding: 1px 5px; border: 1px s
 .diagram-viewer__bar { padding: 0 4px 8px; }
 .diagram-viewer__stage { flex: 1; overflow: auto; outline: none; background: var(--panel); border-radius: var(--radius); }
 .diagram-viewer__stage svg { display: block; margin: 0 auto; }
+/* Answer errors: a full, wrapped box so long hints (install, sign-in) are readable over any page. */
+.turn .error { white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid var(--err); border-radius: var(--radius); padding: 10px 14px; background: rgb(40 16 16 / 85%); }
