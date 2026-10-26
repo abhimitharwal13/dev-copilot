@@ -10,6 +10,11 @@ export const HLD_TEMPLATE: OutputTemplate = {
     'You are a staff engineer explaining a distributed system on a whiteboard. You build the design up step by step and keep every point short enough to read at a glance.',
   sections: [
     {
+      heading: 'Talk Track',
+      instructions:
+        'What the candidate says out loud in the first minute, before drawing anything: five or six numbered lines in the first person, in plain spoken English, each under 20 words, specific to this problem. Cover, in order: restating the problem in one sentence, the two or three requirements that matter most, the scale and what it implies, the plan to start simple and evolve in phases, and the one or two hardest parts to come back to. No tables, code or diagrams here.'
+    },
+    {
       heading: 'Requirements',
       instructions:
         'Three to five functional requirements as short bullets. Then the non-functional targets as a table with columns Property | Target (availability, latency, consistency, durability; one short cell each). Then one line naming what is out of scope.'
@@ -45,15 +50,10 @@ export const HLD_TEMPLATE: OutputTemplate = {
         'One small table per main entity (Field | Type | Note), or a fenced SQL block if it is shorter. Then one line per store: which database and why, and the partition or shard key.'
     },
     {
-      heading: 'Deep Dives',
+      heading: 'Deep Dives & Trade-offs',
       instructions:
-        'The two hardest problems for this particular system, each as a `###` heading followed by: the problem in one line, the mechanism as at most 4 bullets (exact queries, locks or data structures), and one line on what it costs. Pick them from the domain, for example: seat locking and hold expiry for ticketing; inventory and payment idempotency for e-commerce; fan-out for feeds; driver matching for ride-hailing; ordering and delivery receipts for chat; ID generation for URL shorteners.'
+        'The two hardest problems for this particular system, each as a `###` heading followed by: the problem in one line, the mechanism as at most 4 bullets (exact queries, locks or data structures), and one line on what it costs. Pick them from the domain, for example: seat locking and hold expiry for ticketing; inventory and payment idempotency for e-commerce; fan-out for feeds; driver matching for ride-hailing; ordering and delivery receipts for chat; ID generation for URL shorteners. Then a `### Trade-offs` table Decision | Chosen | Alternative | Why, with four to six rows, and up to three bullets on bottlenecks and what to monitor.'
     },
-    {
-      heading: 'Trade-offs',
-      instructions:
-        'One table Decision | Chosen | Alternative | Why, with four to six rows. Then up to three bullets on bottlenecks and what to monitor.'
-    }
   ],
   rules: [
     'Readers must understand each section in a few seconds: use bullets and tables, never paragraphs longer than two sentences, and keep bullets under about 20 words.',
@@ -61,6 +61,7 @@ export const HLD_TEMPLATE: OutputTemplate = {
     'Tie every component back to a requirement or estimate; avoid buzzword lists.',
     'Keep diagrams small and legible: respect the node limits, use node labels of at most three words, short edge labels (one or two words) or none, and no subgraphs.',
     'Mermaid diagrams must be valid syntax: quote labels containing spaces or punctuation, for example `A["API Gateway"]`.',
-    'Do not number the `##` headings yourself; the app numbers them.'
+    'Start each Phase section and each deep dive with one line `> Say: ...`: a single spoken sentence the candidate can use to introduce that step.',
+    'Do not number the `##` headings yourself; the app numbers them, and number keys 1 to 9 jump to them, so never add `##` headings beyond the ones listed.'
   ]
 }

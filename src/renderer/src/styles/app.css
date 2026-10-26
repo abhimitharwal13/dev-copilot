@@ -175,3 +175,6 @@ kbd { font-family: var(--mono); font-size: 12px; padding: 1px 5px; border: 1px s
 .mermaid svg { display: block; margin: 0 auto; }
 /* Diagrams may use the whole answer pane, not just the text column, so wide ones stay legible. */
 .markdown .mermaid:not(.mermaid--pending) { width: calc(100cqw - 64px); margin-left: calc(50% - (100cqw - 64px) / 2); }
+/* "> Say: …" lines: what to say out loud before a step. */
+.markdown blockquote { margin: 8px 0 10px; padding: 6px 12px; border-left: 3px solid var(--ok); background: rgb(95 211 154 / 8%); border-radius: 0 6px 6px 0; font-style: italic; }
+.markdown blockquote p { margin: 0; }

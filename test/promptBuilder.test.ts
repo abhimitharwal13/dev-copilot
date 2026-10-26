@@ -38,6 +38,7 @@ describe('buildSystemPrompt', () => {
     const phases = ['## Phase 1', '## Phase 2', '## Phase 3'].map((h) => prompt.indexOf(h))
     expect(phases.every((p, i) => p > 0 && (i === 0 || p > phases[i - 1]))).toBe(true)
     expect(prompt.match(/flowchart (LR|TB)/g)).toHaveLength(3)
+    expect(prompt.indexOf('## Talk Track')).toBeLessThan(prompt.indexOf('## Requirements'))
   })
 })
 

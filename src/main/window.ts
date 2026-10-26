@@ -36,6 +36,10 @@ export function createOverlayWindow(overlay: OverlaySettings): BrowserWindow {
     }
   })
   applyOverlaySettings(win, overlay)
+  // macOS can drop the ignore-mouse flag when a hidden or minimized window comes back, so set it again.
+  for (const event of ['show', 'restore', 'focus'] as const) {
+    win.on(event as 'show', () => win.setIgnoreMouseEvents(clickThrough))
+  }
   // Chromium resets zoom on navigation and can remember a stray zoom per page; the setting always wins.
   win.webContents.on('did-finish-load', () => win.webContents.setZoomFactor(zoom))
   win.once('ready-to-show', () => win.show())
@@ -56,6 +60,7 @@ export function createOverlayWindow(overlay: OverlaySettings): BrowserWindow {
 
 /** Text size from settings, re-applied after every page load. */
 let zoom = 1
+let clickThrough = true
 
 export function applyOverlaySettings(win: BrowserWindow, overlay: OverlaySettings): void {
   zoom = overlay.zoom
@@ -63,7 +68,8 @@ export function applyOverlaySettings(win: BrowserWindow, overlay: OverlaySetting
   // 'screen-saver' keeps the overlay above other windows, including a full-screen browser.
   win.setAlwaysOnTop(overlay.alwaysOnTop, 'screen-saver')
   // Click-through: the mouse works the app behind (drawing, scrolling); the overlay stays keyboard-driven.
-  win.setIgnoreMouseEvents(overlay.clickThrough)
+  clickThrough = overlay.clickThrough
+  win.setIgnoreMouseEvents(clickThrough)
   // macOS gives each full-screen app its own Space; without this the overlay
   // stays behind on the desktop Space and never shows over a full-screen browser.
   if (process.platform === 'darwin') {
