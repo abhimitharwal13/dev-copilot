@@ -61,6 +61,7 @@ export function createOverlayWindow(overlay: OverlaySettings): BrowserWindow {
 /** Text size from settings, re-applied after every page load. */
 let zoom = 1
 let clickThrough = true
+let onAllWorkspaces: boolean | undefined
 
 export function applyOverlaySettings(win: BrowserWindow, overlay: OverlaySettings): void {
   zoom = overlay.zoom
@@ -72,7 +73,10 @@ export function applyOverlaySettings(win: BrowserWindow, overlay: OverlaySetting
   win.setIgnoreMouseEvents(clickThrough)
   // macOS gives each full-screen app its own Space; without this the overlay
   // stays behind on the desktop Space and never shows over a full-screen browser.
-  if (process.platform === 'darwin') {
+  // Only when it changes: each call briefly turns the app into a background (UI element) process,
+  // which on every opacity or zoom change knocked the overlay out of keyboard focus.
+  if (process.platform === 'darwin' && onAllWorkspaces !== overlay.alwaysOnTop) {
+    onAllWorkspaces = overlay.alwaysOnTop
     win.setVisibleOnAllWorkspaces(overlay.alwaysOnTop, { visibleOnFullScreen: overlay.alwaysOnTop })
   }
 }
@@ -84,6 +88,7 @@ export function showAndFocus(win: BrowserWindow): void {
   // macOS only lets a background app take the keyboard when it asks to steal focus; without
   // this the overlay shows but keys (Esc, typing) still go to the app underneath.
   if (process.platform === 'darwin') app.focus({ steal: true })
+  win.moveTop()
   win.focus()
   win.webContents.focus()
 }
