@@ -24,6 +24,7 @@ export function defaultSettings(): Settings {
       toggleRecording: 'CommandOrControl+Shift+R',
       toggleWindow: 'CommandOrControl+Shift+Space',
       minimizeWindow: 'CommandOrControl+M',
+      newProblem: 'CommandOrControl+Shift+N',
       toggleClickThrough: 'CommandOrControl+Shift+M',
       scrollUp: 'CommandOrControl+Shift+Up',
       scrollDown: 'CommandOrControl+Shift+Down',

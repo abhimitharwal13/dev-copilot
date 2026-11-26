@@ -14,7 +14,7 @@ export const IN_APP_SHORTCUTS: [string, string][] = [
   ['CommandOrControl+Left', '…Right / Up / Down: move the overlay (outside the prompt box; from any app use the move shortcut above)'],
   ['Alt+1', '…Alt + 5: ask one of the "Ask next" follow-ups above the prompt box (a new question, not a jump)'],
   ['CommandOrControl+1', '…Ctrl + 4: switch DSA / LLD / System Design / Database'],
-  ['CommandOrControl+N', 'Start a new problem'],
+  ['CommandOrControl+N', 'Start a new problem, keeping captured context (from any app: the new problem shortcut above clears both)'],
   ['CommandOrControl+J', 'Jump to the next section (Ctrl + Shift + J: previous)'],
   ['CommandOrControl+D', 'Open the diagram in view full-size (+ / - zoom, Tab next, Ctrl + S save SVG)'],
   ['CommandOrControl+S', 'Save the conversation as Markdown'],

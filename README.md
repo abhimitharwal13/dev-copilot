@@ -70,6 +70,7 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | `Ctrl/⌘ + Shift + Space` | Show or hide the overlay |
 | `Ctrl/⌘ + M` | Minimize the overlay; press again (from any app) to bring it back |
 | `Ctrl/⌘ + Shift + M` | Mouse click-through on / off. On by default: clicks, scrolling and hovering go to the app behind the overlay, so you can draw or browse under it |
+| `Ctrl/⌘ + Shift + N` | New problem from any app: clears the answer and all captured context without taking focus from the app you're in |
 | `Ctrl/⌘ + Shift + Up / Down` | Scroll the answer without focusing the overlay |
 | `Ctrl/⌘ + Alt + Arrow keys` | Move the overlay (inside the overlay, `Ctrl/⌘ + Arrow keys` alone also works, except in the prompt box) |
 

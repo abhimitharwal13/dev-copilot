@@ -113,6 +113,7 @@ export function App() {
   }
 
   const newProblem = (): void => {
+    if (state.busy) cancel()
     reset()
     sentContext.current.clear()
     setTypeOverride(undefined)
@@ -223,6 +224,9 @@ export function App() {
       prompt.current?.select()
     } else if (command.type === 'solveContext') {
       if (!state.busy) submit('')
+    } else if (command.type === 'newProblem') {
+      setDialog(null)
+      newProblem()
     } else if (command.type === 'notice') {
       flash(command.message, command.tone, command.tone === 'error' ? 12000 : 3500)
     } else {

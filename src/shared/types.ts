@@ -100,6 +100,8 @@ export interface ShortcutSettings {
   toggleWindow: string
   /** Minimize the overlay; pressed again (from any app), restore it. */
   minimizeWindow: string
+  /** Clear the answer and all context to start a new problem, from any app. */
+  newProblem: string
   /** Turn mouse click-through on or off. */
   toggleClickThrough: string
   scrollUp: string
@@ -117,6 +119,7 @@ export const SHORTCUT_LABELS: Record<keyof ShortcutSettings, string> = {
   toggleRecording: 'Voice input (coming soon)',
   toggleWindow: 'Show / hide overlay',
   minimizeWindow: 'Minimize / restore overlay',
+  newProblem: 'New problem (clear answer and context)',
   toggleClickThrough: 'Mouse goes through the overlay (on / off)',
   scrollUp: 'Scroll answer up',
   scrollDown: 'Scroll answer down',
@@ -127,6 +130,7 @@ export const SHORTCUT_LABELS: Record<keyof ShortcutSettings, string> = {
 export type UiCommand =
   | { type: 'focusPrompt' }
   | { type: 'solveContext' }
+  | { type: 'newProblem' }
   | { type: 'scroll'; direction: 'up' | 'down' }
   /** A message to show briefly, e.g. after a screen capture or when permission is missing. */
   | { type: 'notice'; message: string; tone: 'info' | 'error' }

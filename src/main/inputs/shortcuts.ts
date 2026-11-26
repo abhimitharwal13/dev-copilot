@@ -116,6 +116,12 @@ export function registerShortcuts(settings: ShortcutSettings, deps: ShortcutDeps
       else win.minimize()
     })
   )
+  // Global so a fresh start works while the app underneath keeps the keyboard.
+  bind(settings.newProblem, () => {
+    deps.buffer.clear()
+    deps.sendCommand({ type: 'newProblem' })
+    deps.sendCommand({ type: 'notice', tone: 'info', message: 'Cleared. Ready for a new problem.' })
+  })
   if (deps.toggleClickThrough) bind(settings.toggleClickThrough, deps.toggleClickThrough)
   // Scrolling and moving work without focusing the overlay, so the app underneath keeps the keyboard.
   bind(settings.scrollUp, () => deps.sendCommand({ type: 'scroll', direction: 'up' }))
