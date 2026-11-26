@@ -35,6 +35,8 @@ export function createOverlayWindow(overlay: OverlaySettings): BrowserWindow {
       sandbox: true
     }
   })
+  // Ask the OS to exclude this window from screen capture where supported.
+  win.setContentProtection(true)
   applyOverlaySettings(win, overlay)
   // macOS can drop the ignore-mouse flag when a hidden or minimized window comes back, so set it again.
   for (const event of ['show', 'restore', 'focus'] as const) {
