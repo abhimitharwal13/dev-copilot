@@ -33,12 +33,23 @@ describe('buildSystemPrompt', () => {
     expect(buildSystemPrompt('dsa', { preferredLanguage: 'Python' })).not.toContain('mermaid')
   })
 
-  it('builds system designs bottom-up in phases, each with its own diagram', () => {
+  it('teaches system design in class order: requirements, numbers, entities, APIs, basic design, its problems, the fix', () => {
     const prompt = buildSystemPrompt('hld', { preferredLanguage: 'Java' })
-    const phases = ['## Phase 1', '## Phase 2', '## Phase 3'].map((h) => prompt.indexOf(h))
-    expect(phases.every((p, i) => p > 0 && (i === 0 || p > phases[i - 1]))).toBe(true)
-    expect(prompt.match(/flowchart (LR|TB)/g)).toHaveLength(3)
-    expect(prompt.indexOf('## Talk Track')).toBeLessThan(prompt.indexOf('## Requirements'))
+    const order = [
+      '## Functional Requirements',
+      '## Non-Functional Requirements',
+      '## Back-of-the-Envelope Numbers',
+      '## Core Entities',
+      '## APIs',
+      '## Basic Design',
+      '## Problems With the Basic Design',
+      '## Improved Design',
+      '## Database Schema & Queries',
+      '## Deep Dives & Trade-offs'
+    ].map((h) => prompt.indexOf(h))
+    expect(order.every((p, i) => p > 0 && (i === 0 || p > order[i - 1]))).toBe(true)
+    expect(prompt.match(/flowchart (LR|TB)/g)).toHaveLength(2)
+    expect(prompt).toContain('teacher')
   })
 })
 

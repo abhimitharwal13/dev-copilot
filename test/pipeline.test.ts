@@ -85,7 +85,7 @@ describe('SolvePipeline', () => {
     const { events, pipeline, provider } = setup()
     await run(pipeline, { requestId: 'r1', prompt: 'Given an array nums...', problemType: 'hld' })
     expect(events[1]).toMatchObject({ detection: { type: 'hld', method: 'manual' } })
-    expect(provider.requests[0].system).toContain('## Phase 1: Simplest Design')
+    expect(provider.requests[0].system).toContain('## Problems With the Basic Design')
   })
 
   it('reports provider failures as error events', async () => {
