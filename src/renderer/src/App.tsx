@@ -24,6 +24,11 @@ const SHORT_LABEL: Record<ProblemType, string> = { dsa: 'DSA', lld: 'LLD', hld: 
 const MOD = IS_MAC ? '⌘' : 'Ctrl'
 const OPACITY_STEP = 0.08
 
+/** The digit that jumps to section `i` (0-based): 1…9, then 0 for the tenth. */
+function sectionKey(i: number): string {
+  return String((i + 1) % 10)
+}
+
 export function App() {
   const [settings, setSettings] = useState<PublicSettings | null>(null)
   const [providers, setProviders] = useState<ProviderInfo[]>([])
@@ -35,6 +40,8 @@ export function App() {
   const [typeOverride, setTypeOverride] = useState<ProblemType | undefined>()
   /** Index of the numbered section currently at the top of the answer. */
   const [activeSection, setActiveSection] = useState(0)
+  /** Number keys type into the prompt box, so the section bar says how to reach them from there. */
+  const [promptFocused, setPromptFocused] = useState(false)
   const { state, ask, cancel, reset } = useSolve()
   // The section bar numbers the newest answer that has sections (a short follow-up may have none).
   let navTurn = -1
@@ -57,6 +64,16 @@ export function App() {
     void api.providers.list().then(setProviders)
     void api.context.list().then(setContext)
     return api.context.onChanged(setContext)
+  }, [])
+
+  useEffect(() => {
+    const onFocus = (): void => setPromptFocused(document.activeElement === prompt.current)
+    window.addEventListener('focusin', onFocus)
+    window.addEventListener('focusout', onFocus)
+    return () => {
+      window.removeEventListener('focusin', onFocus)
+      window.removeEventListener('focusout', onFocus)
+    }
   }, [])
 
   const lastAnswerLength = state.turns[state.turns.length - 1]?.answer.length ?? 0
@@ -257,8 +274,9 @@ export function App() {
     'Alt+Up': () => scroll('up'),
     'Alt+Down': () => scroll('down')
   }
-  // Bare digits jump to numbered sections; they are ignored while the prompt box has focus.
-  for (let n = 0; n <= Math.min(9, sections.length); n++) keyMap[String(n)] = () => jumpTo(n)
+  // Bare digits jump to numbered sections (0 is the tenth, else the question); ignored while typing in the prompt box.
+  if (sections.length > 0 && sections.length < 10) keyMap['0'] = () => jumpTo(0)
+  sections.slice(0, 10).forEach((_, i) => (keyMap[sectionKey(i)] = () => jumpTo(i + 1)))
   // ⌘/Ctrl + arrows move the overlay while it has focus; in the prompt box they keep moving the cursor.
   for (const direction of ['Left', 'Right', 'Up', 'Down'] as const) {
     keyMap[`CommandOrControl+${direction}`] = () =>
@@ -338,7 +356,16 @@ export function App() {
         >
           {sections.length > 0 && (
             <nav className="sections" aria-label="Sections">
-              {sections.slice(0, 9).map((title, i) => (
+              <span className="sections__hint">
+                {promptFocused ? (
+                  <>
+                    <kbd>Tab</kbd> then a number to jump
+                  </>
+                ) : (
+                  'Press a number to jump'
+                )}
+              </span>
+              {sections.slice(0, 10).map((title, i) => (
                 <button
                   key={`${i}-${title}`}
                   type="button"
@@ -346,7 +373,7 @@ export function App() {
                   className={i === activeSection ? 'active' : ''}
                   onClick={() => jumpTo(i + 1)}
                 >
-                  <kbd>{i + 1}</kbd> {title}
+                  <kbd>{sectionKey(i)}</kbd> {title}
                 </button>
               ))}
             </nav>

@@ -78,8 +78,8 @@ Everything works without the mouse. Global shortcuts work while another app is f
 | `Enter` / `Shift + Enter` | Send / new line |
 | `Esc` | Stop the answer, close a dialog, or hide the overlay |
 | `Tab` | Move between the prompt box and the answer |
-| `1…9` / `0` | Jump to that numbered section of the answer / back to the question. Sending a prompt moves focus to the answer so these work right away; `Tab` or `Ctrl/⌘ + L` goes back to the prompt box, where digits type normally |
-| `Alt + 1…5` | Quick follow-ups for the current type (DSA: optimise space, edge cases, tests…; LLD: thread safety, new feature, patterns…; System Design: scale 10x, deep dive, schema & sharding, sequence diagram, interviewer follow-ups; Database: sample data, query tuning, NoSQL version…) |
+| `1…9` / `0` | Jump to that numbered section of the answer (`0` is section 10, or the question when there are fewer). The bar of numbered chips pinned above the answer shows these; it reads "Tab then a number to jump" while the prompt box has focus. Sending a prompt moves focus to the answer so these work right away; `Tab` or `Ctrl/⌘ + L` goes back to the prompt box, where digits type normally |
+| `Alt + 1…5` | The "Ask next" chips above the prompt box: each sends a new follow-up question (they don't jump). Quick follow-ups for the current type (DSA: optimise space, edge cases, tests…; LLD: thread safety, new feature, patterns…; System Design: scale 10x, deep dive, schema & sharding, sequence diagram, interviewer follow-ups; Database: sample data, query tuning, NoSQL version…) |
 | `Ctrl/⌘ + 1…4` | Switch DSA / LLD / System Design / Database (re-runs the answer) |
 | `Ctrl/⌘ + N` | New problem |
 | `Ctrl/⌘ + Shift + C` | Copy the solution code (every block of the Code / Implementation / Tables section) |
@@ -96,7 +96,7 @@ Everything works without the mouse. Global shortcuts work while another app is f
 
 Code is written in Java by default; change it in Settings.
 
-Answers are split into numbered sections, listed in a bar pinned to the top of the answer. System Design answers are built bottom-up: requirements and estimates, then **Phase 1** (the simplest design that works, with a small diagram), **Phase 2** (what breaks and the scaled design, new parts highlighted) and **Phase 3** (caching, queues and replication), followed by the data model, deep dives and trade-offs. Wide diagrams no longer shrink below 80% of their natural size; they scroll sideways instead, and `Ctrl/⌘ + D` opens any diagram full-size.
+Answers are split into numbered sections, listed in a bar pinned to the top of the answer. System Design answers read like a teacher's class notes, in plain spoken English you can read aloud, each section opening with a "Say:" line. The order is: functional requirements, non-functional requirements, back-of-the-envelope numbers, core entities, APIs, the basic design, the problems with it (numbered), the improved design that fixes each problem (new parts highlighted, plus a sequence diagram), database schema and queries, then deep dives and trade-offs. Diagrams always fit the pane width so nothing is cut off; `Ctrl/⌘ + D` opens any diagram full-size.
 
 ![Numbered sections and a Phase 2 diagram](docs/system-design-sections.png)
 

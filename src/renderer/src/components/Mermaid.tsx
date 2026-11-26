@@ -11,11 +11,9 @@ mermaid.initialize({
   // SVG text labels: HTML labels were measured narrower than they render, which clipped long names.
   htmlLabels: false,
   flowchart: { nodeSpacing: 28, rankSpacing: 36, padding: 10 },
-  sequence: { actorMargin: 40, messageFontSize: 15, actorFontSize: 15, noteFontSize: 14 }
+  // wrap: long message labels break onto lines instead of pushing participants apart.
+  sequence: { actorMargin: 40, messageFontSize: 15, actorFontSize: 15, noteFontSize: 14, wrap: true }
 })
-
-/** A wide diagram shrinks to the column only this far; past that it scrolls sideways, so labels stay readable. */
-const MIN_SCALE = 0.8
 
 /** Renders a Mermaid block; falls back to the source while streaming or on syntax errors. */
 export function Mermaid({ code, final }: { code: string; final: boolean }) {
@@ -28,8 +26,9 @@ export function Mermaid({ code, final }: { code: string; final: boolean }) {
     const el = box.current?.querySelector('svg')
     const width = el?.viewBox.baseVal?.width
     if (!el || !width) return
-    // Mermaid scales the SVG to fit the column (width 100%, max-width natural); keep a floor on that.
-    el.style.width = `max(100%, ${Math.round(width * MIN_SCALE)}px)`
+    // Always fit the pane: a sideways-scrolling diagram hides its right side, and the keyboard can't scroll it.
+    // Ctrl/⌘ + D opens any diagram full size when a wide one gets small.
+    el.style.width = '100%'
     el.style.maxWidth = `${Math.round(width)}px`
     el.style.height = 'auto'
   }, [svg])

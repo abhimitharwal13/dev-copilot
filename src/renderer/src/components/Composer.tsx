@@ -115,6 +115,7 @@ export function Composer({ isFollowUp, problemType, busy, onSubmit, onCancel, te
     >
       {isFollowUp && (
         <div className="composer__chips">
+          <span className="composer__chips-label">Ask next</span>
           {FOLLOW_UPS[problemType].map(({ label, prompt }, i) => (
             <button key={label} type="button" className="chip" disabled={busy} onClick={() => submit(prompt)}>
               <kbd>
